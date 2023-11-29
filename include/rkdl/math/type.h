@@ -1,4 +1,5 @@
 #pragma once 
+#define PURE_EIGEN
 
 #ifndef PURE_EIGEN
 #include <ArduinoEigen.h>

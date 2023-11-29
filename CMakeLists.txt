@@ -5,11 +5,12 @@ project(rkdl)
 find_package(Eigen3 REQUIRED)
 
 set(source_file
-    src/frame.cpp
     src/joint/joint_base.cpp
     src/joint/fixed.cpp
     src/joint/revolute.cpp
     src/robot_model.cpp
+    src/frame.cpp
+    src/kinematics/solver.cpp
 )
 
 add_library(${PROJECT_NAME} ${source_file})
@@ -21,7 +22,7 @@ target_include_directories(${PROJECT_NAME}
     ${EIGEN3_INCLUDE_DIRS}
 )
 
-add_compile_definitions(PURE_EIGEN)
+# add_compile_definitions(PURE_EIGEN)
 
 
 function(add_rkdl_test base_name)

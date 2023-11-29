@@ -19,7 +19,11 @@ void RobotModel::addJoint(std::shared_ptr<JointBase>& j)
 bool RobotModel::initialize() 
 {
     if (!checkDuplication()) return false;
-    if (!checkConnectivity()) return false;
+    if (!setRootBody()) return false;
+    setTreeTypeOfBody();
+    coordinateFrameOrder();
+    setIndexes();
+    setConnectivity();
 
     jn_ = joints_.size();
     fn_ = frames_.size();
@@ -31,7 +35,7 @@ bool RobotModel::updateState()
     return true;
 }
 
-std::shared_ptr<Frame>& RobotModel::findFrame(const Name& name)
+std::shared_ptr<Frame> RobotModel::findFrame(const Name& name)
 {
     auto iter = std::find_if(frames_.begin(), frames_.end(), [name](const std::shared_ptr<Frame>& f){return f->name_ == name;});
     
@@ -39,7 +43,7 @@ std::shared_ptr<Frame>& RobotModel::findFrame(const Name& name)
     return *iter;
 }
 
-std::shared_ptr<JointBase>& RobotModel::findJoint(const Name& name)
+std::shared_ptr<JointBase> RobotModel::findJoint(const Name& name)
 {
     auto iter = std::find_if(joints_.begin(), joints_.end(), [name](const std::shared_ptr<JointBase>& j){return j->name_ == name;});
     
@@ -49,48 +53,89 @@ std::shared_ptr<JointBase>& RobotModel::findJoint(const Name& name)
 
 bool RobotModel::checkDuplication()
 {
-    for (auto& f: frames_)
+    // check the uniqueness of frames
+    for (const auto& f: frames_)
     {
-        auto iter = std::find_if(frames_.begin(), frames_.end(), [f](const std::shared_ptr<Frame>& ff){return f->name_ == ff->name_;});
-
-        if (iter != frames_.end()) return false;
+        int fn = std::count_if(frames_.begin(), frames_.end(), [f](const auto& af){return f->name_ == af->name_;});
+        if (fn != 1) return false;
     }
-    
-    for (auto& j: joints_)
+    // check the uinquenss of joints
+    for (const auto& j: joints_)
     {
-        auto iter = std::find_if(joints_.begin(), joints_.end(), [j](const std::shared_ptr<JointBase>& jj){return j->name_ == jj->name_;});
-
-        if (iter != joints_.end()) return false;
+        int jn = std::count_if(joints_.begin(), joints_.end(), [j](const auto& aj){return j->name_ == aj->name_;});
+        if (jn != 1) return false;
     }
     return true;
 }
 
-bool RobotModel::checkConnectivity()
+// search and set root_body name (root_frame)
+bool RobotModel::setRootBody()
 {
-    // check whether parent frame exists and uniqueness of the root frame
+    // detect the root body
+    int root_num = 0;
+    for (auto& f: frames_)
+    {
+        // search parent frame
+        auto iter = std::find_if(frames_.begin(), frames_.end(), [f](const std::shared_ptr<Frame>& pf){return f->parent_frame_ == pf->name_;});
+        if (iter == frames_.end())
+        {
+            if (++root_num > 1) return false;
+            root_frame_ = f->name_;
+        }
+    }
+    return true;
+}
+
+void RobotModel::coordinateFrameOrder()
+{
+    // coordinate frame order
+    Name fn = root_frame_;
+    std::vector<std::shared_ptr<Frame>> fv;
+    for (auto& f: frames_)
+    {
+        if (f->parent_frame_ == fn)
+        {
+            fv.push_back(f);
+        }
+    }
+    frames_ = fv;
+}
+
+// set parent frame/joint of frames
+bool RobotModel::setParentOfFrame()
+{
+    // check whether parent frame and joint of the frames exists
     int root_num = 0;
     for (auto& f: frames_)
     {
         // search parent frame
         auto iter = std::find_if(frames_.begin(), frames_.end(), [f](const std::shared_ptr<Frame>& pf){return f->parent_frame_ == pf->name_;});
 
-        // does not have parent frame
+        // root frame
         if (iter == frames_.end())
         {
-            ++root_num;
-            if (root_num > 1) return false;
-            root_frame_ = f->name_;
-            root_frame_index_ = std::distance(frames_.begin(), std::find_if(frames_.begin(), frames_.end(), [f](const std::shared_ptr<Frame>& ff){return f->name_ == ff->name_;}));
-            f->type_ = Tree::Root;
+            if (root_frame_ != f->name_) return false;
+            root_frame_index_ = root_frame_index_;
+            f->parent_frame_index_ = -1;
         }
         else
         {
-            f->type_ = Tree::Internal;
+            // check the parent joint exists
+            auto jiter = std::find_if(joints_.begin(), joints_.end(), [f](const std::shared_ptr<JointBase>& j){return f->parent_joint_ == j->name_;});
+            if (jiter == joints_.end()) return false;
+
+            // set parent frame/joint index
             f->parent_frame_index_ = std::distance(frames_.begin(), iter);
+            f->parent_joint_index_ = std::distance(joints_.begin(), jiter);
         }
     }
 
-    // check leaf frames
+    return true;
+}
+
+// tree type of frame
+void RobotModel::setTreeTypeOfBody()
+{
     for (auto& f: frames_)
     {
         // search child frame
@@ -101,28 +146,44 @@ bool RobotModel::checkConnectivity()
         {
             f->type_ = Tree::Leaf;
         }
+        else if (f->name_ != root_frame_)
+        {
+            f->type_ = Tree::Internal;
+        }
+        else 
+        {
+            f->type_ = Tree::Root;
+        }
     }
+}
 
-    // check wheter parent joint exists
-    for (auto& f: frames_)
+// frame/joint_indexes_
+void RobotModel::setIndexes()
+{
+    for (int i=0; i<frames_.size(); ++i)
     {
-        if (f->isRoot()) continue;
-        // search parent joint
-        auto iter = std::find_if(joints_.begin(), joints_.end(), [f](const std::shared_ptr<JointBase>& j){return f->parent_joint_ == j->name_;});
-
-        if (iter == joints_.end()) return false;
-        else f->parent_joint_index_ = std::distance(joints_.begin(), iter);
+        frame_indexes_[frames_[i]->name_] = i;
     }
 
+    for (int i=0; i<frames_.size(); ++i)
+    {
+        joint_indexes_[joints_[i]->name_] = i;
+    }
+}
+
+// set child joint index of joints and the number of child actuated joint
+void RobotModel::setChildOfJoint()
+{
     // set child joint of each joint
     for (auto& j: joints_)
     {
         // search child frame
         std::shared_ptr<Frame>& c_frame = *std::find_if(frames_.begin(), frames_.end(), [j](const std::shared_ptr<Frame>& f){return j->name_ == f->parent_joint_;});
-        
+
         if (c_frame->isLeaf())
         {
-            j->child_joint_index_ = -1;
+            j->tree_type_ = Tree::Leaf;
+            j->child_joint_index_ = -1; // leaf
             continue;
         }
 
@@ -136,7 +197,27 @@ bool RobotModel::checkConnectivity()
         j->child_joint_index_ = std::distance(joints_.begin(), iter);
     }
 
-    // set parent joint of each joint
+    // set the number of child actuated joint
+    for (auto j: joints_)
+    {
+        int num = 0;
+        if (j->joint_type_ == JointType::Fixed) j->cajn_ = 0;
+        else j->cajn_ = 1;
+
+        if (j->isLeaf()) continue;
+        std::shared_ptr<JointBase> tj = joints_[j->child_joint_index_];
+        while (!tj->isLeaf())
+        {
+            if (tj->joint_type_ != JointType::Fixed) ++num;
+            tj = joints_[tj->child_joint_index_];
+        }
+        j->cajn_ = num;
+    }
+}
+
+// set parent joint index of joints and the number of parent actuated joint
+void RobotModel::setParentOfJoint()
+{
     for (auto& j: joints_)
     {
         // search child frame
@@ -147,7 +228,8 @@ bool RobotModel::checkConnectivity()
 
         if (p_frame->isRoot()) 
         {
-            j->parent_joint_index_ = -1;
+            j->tree_type_ = Tree::Root;
+            j->parent_joint_index_ = -1; // root 
             continue;
         }
 
@@ -157,6 +239,30 @@ bool RobotModel::checkConnectivity()
         // set parent joint
         j->parent_joint_index_ = std::distance(joints_.begin(), iter);
     }
+
+    // set the number of parent actuated joint
+    for (auto j: joints_)
+    {
+        int num = 0;
+        if (j->joint_type_ == JointType::Fixed) j->pajn_ = 0;
+        else j->pajn_ = 1;
+
+        if (j->isRoot()) continue;
+        std::shared_ptr<JointBase> tj = joints_[j->parent_joint_index_];
+        while (!tj->isRoot())
+        {
+            if (tj->joint_type_ != JointType::Fixed) ++num;
+            tj = joints_[tj->parent_joint_index_];
+        }
+        j->pajn_ = num;
+    }
+}
+
+bool RobotModel::setConnectivity()
+{
+    if (!setParentOfFrame()) return false;
+    setChildOfJoint();
+    setParentOfJoint();
 
     return true;
 }

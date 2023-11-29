@@ -4,17 +4,24 @@ namespace rkdl
 {
 TransformMatrix Kinematics::transformMatrix(RobotModel& model, const Name& frame_name, const  Vector& q)
 {
-    std::shared_ptr<Frame> f = model.findFrame(frame_name);
-    if (f->isRoot() || q.size()<1) return TransformMatrix();
-    std::shared_ptr<JointBase> j = model.joints_[f->parent_frame_index_];
+    std::shared_ptr<Frame> f = model.getFrame(frame_name);
+    if (f->isRoot()) return TransformMatrix();
+    std::shared_ptr<JointBase> j = model.joints_[f->parent_joint_index_];
+
+    int q_ind =j->pajn_;
+    // the number of states is not enough
+    if (q.size() < j->pajn_) {
+        error_ = true;
+        return TransformMatrix();
+    }
     
-    int q_ind = q.size();
+    TransformMatrix result;
     if (j->joint_type_!=JointType::Fixed)
     {
         --q_ind;
-        j->setPosition(q[q_ind]);
+        j->transformMatrix(q[q_ind]);
     }
-    TransformMatrix result(j->transformMatrix());
+    else result = j->transformMatrix();
     
     while(!j->isRoot())
     {
@@ -22,14 +29,11 @@ TransformMatrix Kinematics::transformMatrix(RobotModel& model, const Name& frame
         if (j->joint_type_!=JointType::Fixed)
         {
             --q_ind;
-            if (q_ind < 0) break;
-            j->setPosition(q[q_ind]);
+            result = j->transformMatrix(q[q_ind])*result;
         }
-        TransformMatrix t(j->transformMatrix()*result);
-        result = t;
+        else result = j->transformMatrix()*result;
     }
 
-    if (q_ind != 0) error_ = true;
     return result;
 }
 
@@ -39,13 +43,20 @@ Vector3 Kinematics::posFK(RobotModel& model, const Name& frame_name, const Vecto
     if (f->isRoot() || q.size()<1) return Vector3(p);
     std::shared_ptr<JointBase> j = model.joints_[f->parent_frame_index_];
     
-    int q_ind = q.size();
+    int q_ind = j->pajn_;
+    // the number of states is not enough
+    if (q.size() < j->pajn_) {
+        error_ = true;
+        return Vector3(p);
+    }
+
+    Vector3 result;
     if (j->joint_type_!=JointType::Fixed)
     {
         --q_ind;
-        j->setPosition(q[q_ind]);
+        result = j->transformMatrix(q[q_ind])*p;
     }
-    Vector3 result(j->transformMatrix()*p);
+    result = j->transformMatrix()*p;
     
     while(!j->isRoot())
     {
@@ -53,14 +64,11 @@ Vector3 Kinematics::posFK(RobotModel& model, const Name& frame_name, const Vecto
         if (j->joint_type_!=JointType::Fixed)
         {
             --q_ind;
-            if (q_ind < 0) break;
-            j->setPosition(q[q_ind]);
+            result = j->transformMatrix(q[q_ind])*result;
         }
-        Vector3 t(j->transformMatrix()*result);
-        result = t;
+        else result = j->transformMatrix()*result;
     }
 
-    if (q_ind != 0) error_ = true;
     return result;
 }
 
@@ -71,13 +79,20 @@ Matrix3 Kinematics::rotFK(RobotModel& model, const Name& frame_name, const Vecto
     if (f->isRoot() || q.size()<1) return Matrix3(r);
     std::shared_ptr<JointBase> j = model.joints_[f->parent_frame_index_];
     
-    int q_ind = q.size();
+    int q_ind = j->pajn_;
+    // the number of states is not enough
+    if (q.size() < j->pajn_) {
+        error_ = true;
+        return Matrix3(r);
+    }
+
+    Matrix3 result;
     if (j->joint_type_!=JointType::Fixed)
     {
         --q_ind;
-        j->setPosition(q[q_ind]);
+        result = j->transformMatrix(q[q_ind])*r;
     }
-    Matrix3 result(j->transformMatrix()*r);
+    else result = j->transformMatrix()*r;
     
     while(!j->isRoot())
     {
@@ -85,14 +100,11 @@ Matrix3 Kinematics::rotFK(RobotModel& model, const Name& frame_name, const Vecto
         if (j->joint_type_!=JointType::Fixed)
         {
             --q_ind;
-            if (q_ind < 0) break;
-            j->setPosition(q[q_ind]);
+            result = j->transformMatrix(q[q_ind])*result;
         }
-        Matrix3 t(j->transformMatrix()*result);
-        result = t;
+        else result = j->transformMatrix()*result;
     }
 
-    if (q_ind != 0) error_ = true;
     return result;   
 }
 
@@ -102,18 +114,25 @@ TransformMatrix Kinematics::differentialTransformMatrix(RobotModel& model, const
     if (f->isRoot() || q.size()<1) return TransformMatrix();
     std::shared_ptr<JointBase> j = model.joints_[f->parent_frame_index_];
     
-    int q_ind = q.size();
+    int q_ind = j->pajn_;
+    // the number of states is not enough
+    if (q.size() < j->pajn_) {
+        error_ = true;
+        return TransformMatrix();
+    }
+
+    TransformMatrix result;
     if (j->joint_type_!=JointType::Fixed)
     {
         --q_ind;
-        j->setPosition(q[q_ind]);
+        if (j->name_ == joint_name)
+            result = j->differentialTransformMatrix(q[q_ind]);
+        else result = j->transformMatrix(q[q_ind]);
     }
-
-    TransformMatrix result(j->transformMatrix());
-    if (j->name_ == joint_name) 
+    else
     {
-        TransformMatrix temp(result*j->differentialOperator());
-        result = temp;
+        if (j->name_ == joint_name) result = j->differentialTransformMatrix();
+        else result = j->transformMatrix();
     }
     
     while(!j->isRoot())
@@ -122,20 +141,13 @@ TransformMatrix Kinematics::differentialTransformMatrix(RobotModel& model, const
         if (j->joint_type_!=JointType::Fixed)
         {
             --q_ind;
-            if (q_ind < 0) break;
-            j->setPosition(q[q_ind]);
+            if (j->name_ == joint_name) result = j->differentialTransformMatrix(q[q_ind])*result;
+            else result = j->transformMatrix(q[q_ind])*result;
         }
-        if (j->name_ == joint_name) {
-            TransformMatrix t(j->transformMatrix()*result);
-            result = t;
-        }
-        else {
-            TransformMatrix t(j->transformMatrix()*j->differentialOperator()*result);
-            result = t;
-        }
+        if (j->name_ == joint_name) result = j->differentialTransformMatrix()*result;
+        else result = j->transformMatrix()*result;
     }
 
-    if (q_ind != 0) error_ = true;
     return result;
 }
 
@@ -146,18 +158,25 @@ Jacobian Kinematics::jacobian(RobotModel& model, const Name& frame_name, const V
     if (f->isRoot()) return Jacobian(3, q.size());
     std::shared_ptr<JointBase> j = model.joints_[f->parent_frame_index_];
     
-    int q_ind = q.size();
+    int valid_size = j->pajn_;
+    int q_ind = j->pajn_;
+    // the number of states is not enough
+    if (q.size() < valid_size) {
+        error_ = true;
+        return Jacobian(3, q.size());;
+    }
+
     Jacobian result(3, q.size());
-    for (int i=0; result.cols(); ++i) result.col(i)=p;
-    if (j->joint_type_!=JointType::Fixed)
+    for (int i=0; valid_size; ++i) result.col(i)=p;
+    if (j->joint_type_ != JointType::Fixed)
     {
         --q_ind;
-        j->setPosition(q[q_ind]);
         Vector3 t(result.col(q_ind));
-        result.col(q_ind) = j->differentialOperator()*t;
+        result.col(q_ind) = j->differentialOperator(q[q_ind])*t;
+        result = j->transformMatrix(q[q_ind])*result;
     }
-    Jacobian temp(j->transformMatrix()*result);
-    result = temp;
+    else result = j->transformMatrix()*result;
+    // result = j->transformMatrix()*result.(valid_size);
 
     while(!j->isRoot())
     {
@@ -166,16 +185,26 @@ Jacobian Kinematics::jacobian(RobotModel& model, const Name& frame_name, const V
         {
             --q_ind;
             if (q_ind < 0) break;
-            j->setPosition(q[q_ind]);
             Vector3 t(result.col(q_ind));
-            result.col(q_ind) = j->differentialOperator()*t;
+            result.col(q_ind) = j->differentialOperator(q[q_ind])*t;
+            result = j->transformMatrix(q[q_ind])*result;
         }
-        Jacobian tj(j->transformMatrix()*result);
-        result = tj;
+        else result = j->transformMatrix()*result;
     }
 
-    if (q_ind != 0) error_ = true;
     return result;
+}
+
+void Kinematics::updateKinematics(RobotModel& model)
+{
+    model.getFrame(model.root_frame_)->transform_matirx_.setIdentity();
+    for (int i=1; i<model.frames_.size(); ++i)
+    {
+        std::shared_ptr<Frame> f = model.frames_[i];
+        std::shared_ptr<JointBase> pj = model.getJoint(f->parent_joint_);
+        std::shared_ptr<Frame> pf = model.getFrame(f->parent_frame_);
+        f->transform_matirx_ = pf->transform_matirx_*pj->transformMatrix();
+    }
 }
 
 }

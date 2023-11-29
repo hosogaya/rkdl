@@ -22,6 +22,7 @@ public:
     int parent_joint_index_;
 
     Tree type_;
+    TransformMatrix transform_matirx_;
 
     const Scalar mass_;
     const Vector3 cog_;
