@@ -103,7 +103,7 @@ void RevoluteJoint::setDifferentialOperator(TransformMatrix& tm, const Scalar p)
     }
     else if (axis_ == RevoluteAxis::None)
     {
-        // Todo
+        tm.setRotationMatrix(p+M_PI_2, axis_vec_);
     }
 }
 
