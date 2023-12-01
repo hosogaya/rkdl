@@ -34,17 +34,19 @@ public:
     int fn_ = 0; // the number of frames
     // int dn_ = 0; // depth of kinematic tree
 
-    std::shared_ptr<Frame> getFrame(const Name& name){return frames_[frame_indexes_.at(name)];}
-    std::shared_ptr<Frame> getFrame(const int index) {return frames_[index];}
-    int getFrameIndex(const Name& name) {return frame_indexes_.at(name);}
-    std::shared_ptr<JointBase> getJoint(const Name& name) {return joints_[joint_indexes_.at(name)];}
-    std::shared_ptr<JointBase> getJoint(const int& index) {return joints_[index];}
-    int getJointIndex(const Name& name) {return joint_indexes_.at(name);}
+    std::shared_ptr<Frame> getFrame(const Name& name) const {return frames_[frame_indexes_.at(name)];}
+    std::shared_ptr<Frame> getFrame(const int index) const {return frames_[index];}
+    int getFrameIndex(const Name& name) const {return frame_indexes_.at(name);}
+    std::shared_ptr<JointBase> getJoint(const Name& name) const {return joints_[joint_indexes_.at(name)];}
+    std::shared_ptr<JointBase> getJoint(const int& index) const {return joints_[index];}
+    int getJointIndex(const Name& name) const {return joint_indexes_.at(name);}
 
 private:
+    // functions for initialization 
     bool checkDuplication();
 
     bool setRootBody();
+    bool checkUniquenessOfParent();
     void setTreeTypeOfBody();
 
     void coordinateFrameOrder();

@@ -11,3 +11,9 @@ This library can handle robot tree structure which has the following specificati
 # Support Joint
 * Fixed Joint: fix two bodies relative pose.
 * revolute Joint: Successor body rotates around a constant axis. 
+
+
+# Geometry
+* Origin of Frame: the connection position with parent joint
+* Frame::cog_: the position of center of body relative to its origin
+* JointBase::fixed_position: the coordinate of connection position with parent frame in parent frame origin

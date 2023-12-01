@@ -2,20 +2,20 @@
 
 namespace rkdl
 {
-RevoluteJoint::RevoluteJoint(Name id, Vector3& pos_p, Vector3& pos_s, Vector3& axis_vec)
-: JointBase(id, JointType::Revolute, pos_p, pos_s), axis_vec_(axis_vec), axis_(RevoluteAxis::None)
+RevoluteJoint::RevoluteJoint(Name id, Vector3& fixed_position, Vector3& axis_vec)
+: JointBase(id, JointType::Revolute, fixed_position), axis_vec_(axis_vec), axis_(RevoluteAxis::None)
 {
     transform_matrix_.rotation_.setIdentity();
-    transform_matrix_.translation_ = pos_p + pos_s;
+    transform_matrix_.translation_ = fixed_position;
 
     setDifferentialOperator(differential_operator_);
 }
 
-RevoluteJoint::RevoluteJoint(Name id, Vector3& pos_p, Vector3& pos_s, RevoluteAxis axis)
-: JointBase(id, JointType::Revolute, pos_p, pos_s), axis_(axis)
+RevoluteJoint::RevoluteJoint(Name id, Vector3& fixed_position, RevoluteAxis axis)
+: JointBase(id, JointType::Revolute, fixed_position), axis_(axis)
 {
     transform_matrix_.rotation_.setIdentity();
-    transform_matrix_.translation_ = pos_p + pos_s;
+    transform_matrix_.translation_ = fixed_position;
     setDifferentialOperator(differential_operator_);
 }
 
@@ -79,7 +79,7 @@ void RevoluteJoint::setTransformMatrix(TransformMatrix& tm, const Scalar p) cons
          *        0, 0, 1
         */
         tm.setRotationMatrix(p, axis_vec_);
-        tm.translation_ = tm.rotation_*pos_s_ + pos_p_;   
+        tm.translation_ = fixed_position_;   
     }
 }
 

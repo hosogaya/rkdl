@@ -15,7 +15,7 @@ typedef enum
 class JointBase
 {
 public:
-    JointBase(Name name_, JointType type, Vector3& pos_p, Vector3& pos_s);
+    JointBase(Name name_, JointType type, Vector3& fixed_position);
     ~JointBase();
 
     bool isLeaf() {return tree_type_ == Tree::Leaf;}
@@ -44,9 +44,9 @@ public:
     int parent_joint_index_;
     int cajn_; // the number of child acutated joint
     int pajn_; // the number of parent acuated joint
-     // fixed position relative to successor body origin (pos_s_) and prodecessor body origin (pos_p_)
-    const Vector3 pos_s_;
-    const Vector3 pos_p_;
+     // fixed position relative to successor body origin (pos_s_) and prodecessor body origin (fixed_position_)
+    // const Vector3 pos_s_;
+    const Vector3 fixed_position_;
     const JointType joint_type_;
     Tree tree_type_;
 

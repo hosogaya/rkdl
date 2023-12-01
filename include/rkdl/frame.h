@@ -8,7 +8,7 @@ namespace rkdl
 class Frame
 {
 public:
-    Frame(Name id, Name parent_frame, Name parent_joint, Scalar m);
+    Frame(Name id, Name parent_frame, Name parent_joint, Scalar m, Vector3& cog);
     ~Frame();
 
     bool isRoot() {return type_==Tree::Root;}

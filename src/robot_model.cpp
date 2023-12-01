@@ -20,10 +20,11 @@ bool RobotModel::initialize()
 {
     if (!checkDuplication()) return false;
     if (!setRootBody()) return false;
+    if (!checkUniquenessOfParent()) return false;
     setTreeTypeOfBody();
     coordinateFrameOrder();
     setIndexes();
-    setConnectivity();
+    if (!setConnectivity()) return false;
 
     jn_ = joints_.size();
     fn_ = frames_.size();
@@ -86,17 +87,44 @@ bool RobotModel::setRootBody()
     return true;
 }
 
+bool RobotModel::checkUniquenessOfParent()
+{
+    for (const auto& f: frames_)
+    {
+        if (f->name_ == root_frame_ || f->parent_frame_ == root_frame_) continue;
+        int num = std::count_if(frames_.begin(), frames_.end(), [f](const std::shared_ptr<Frame>& pf){return f->parent_frame_ == pf->name_;});
+        if (num > 1) return false;
+    }
+    for (const auto& f: frames_)
+    {
+        int num = std::count_if(frames_.begin(), frames_.end(), [f](const std::shared_ptr<Frame>& af){return f->parent_joint_ == af->parent_joint_;});
+        if (num != 1) return false;
+    }
+
+    return true;
+}
+
+
 void RobotModel::coordinateFrameOrder()
 {
     // coordinate frame order
-    Name fn = root_frame_;
     std::vector<std::shared_ptr<Frame>> fv;
-    for (auto& f: frames_)
+    auto iter = std::find_if(frames_.begin(), frames_.end(), [this](const std::shared_ptr<Frame>& f){return f->name_ == this->root_frame_;});
+    fv.push_back(*iter);
+    std::vector<Name> fn{root_frame_};
+    while (fv.size() < frames_.size())
     {
-        if (f->parent_frame_ == fn)
+        std::vector<Name> nfn; // next frame name
+        for (auto& f: frames_)
         {
-            fv.push_back(f);
+            // search frames whose parent frame is included in fn
+            if (std::count_if(fn.begin(), fn.end(), [f](const Name& pfn){return f->parent_frame_ == pfn;}))
+            {
+                fv.push_back(f);
+                nfn.push_back(f->name_);
+            }
         }
+        fn = nfn;
     }
     frames_ = fv;
 }
@@ -115,8 +143,9 @@ bool RobotModel::setParentOfFrame()
         if (iter == frames_.end())
         {
             if (root_frame_ != f->name_) return false;
-            root_frame_index_ = root_frame_index_;
+            root_frame_index_ = std::distance(frames_.begin(), std::find(frames_.begin(), frames_.end(), f));
             f->parent_frame_index_ = -1;
+            f->parent_joint_index_ = -1;
         }
         else
         {
@@ -162,12 +191,12 @@ void RobotModel::setIndexes()
 {
     for (int i=0; i<frames_.size(); ++i)
     {
-        frame_indexes_[frames_[i]->name_] = i;
+        frame_indexes_.emplace(frames_[i]->name_, i);
     }
 
-    for (int i=0; i<frames_.size(); ++i)
+    for (int i=0; i<joints_.size(); ++i)
     {
-        joint_indexes_[joints_[i]->name_] = i;
+        joint_indexes_.emplace(joints_[i]->name_, i);
     }
 }
 

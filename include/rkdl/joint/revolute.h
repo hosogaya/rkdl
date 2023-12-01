@@ -15,8 +15,8 @@ typedef enum
 class RevoluteJoint: public JointBase
 {
 public: 
-    RevoluteJoint(Name id, Vector3& pos_p, Vector3& pos_s, Vector3& axis_vec);
-    RevoluteJoint(Name id, Vector3& pos_p, Vector3& pos_s, RevoluteAxis axis);
+    RevoluteJoint(Name id, Vector3& fixed_position, Vector3& axis_vec);
+    RevoluteJoint(Name id, Vector3& fixed_position, RevoluteAxis axis);
     ~RevoluteJoint();
 
     void print() override {std::cout << "RevoluteJoint" << std::endl;}
