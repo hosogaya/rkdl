@@ -1,7 +1,6 @@
 #pragma once 
-#define PURE_EIGEN
 
-#ifndef PURE_EIGEN
+#ifdef Arduino
 #include <ArduinoEigen.h>
 #else
 #include <eigen3/Eigen/Core>
