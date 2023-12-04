@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project(rkdl)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+
 find_package(Eigen3 REQUIRED)
 
 set(source_file
@@ -21,9 +23,6 @@ target_include_directories(${PROJECT_NAME}
     $<INSTALL_INTERFACE:include>
     ${EIGEN3_INCLUDE_DIRS}
 )
-
-# add_compile_definitions(PURE_EIGEN)
-
 
 function(add_rkdl_test base_name)
 	add_executable(${base_name} test/${base_name}.cpp)
