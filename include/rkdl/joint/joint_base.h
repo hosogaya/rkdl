@@ -22,16 +22,16 @@ public:
     bool isRoot() {return tree_type_ == Tree::Root;}
 
     virtual const TransformMatrix& transformMatrix() const {return transform_matrix_;};
-    virtual TransformMatrix transformMatrix(const Scalar p) const {return transform_matrix_;}
+    virtual TransformMatrix transformMatrix(const Scalar& p) const {return transform_matrix_;}
     virtual const TransformMatrix& differentialOperator() const {return differential_operator_;}
-    virtual TransformMatrix differentialOperator(const Scalar p) const {return differential_operator_;}
+    virtual TransformMatrix differentialOperator(const Scalar& p) const {return differential_operator_;}
     virtual TransformMatrix differentialTransformMatrix() const {return transform_matrix_*differential_operator_;}
-    virtual TransformMatrix differentialTransformMatrix(const Scalar p) const {return transform_matrix_*differential_operator_;}
+    virtual TransformMatrix differentialTransformMatrix(const Scalar& p) const {return transform_matrix_*differential_operator_;}
 
-    virtual void setPosition(const Scalar p) {}
-    virtual void setVelocity(const Scalar v) {}
-    virtual void setAccelration(const Scalar a) {}
-    virtual void setTorque(const Scalar t) {}
+    virtual void setPosition(const Scalar& p) {}
+    virtual void setVelocity(const Scalar& v) {}
+    virtual void setAccelration(const Scalar& a) {}
+    virtual void setTorque(const Scalar& t) {}
 
     virtual void print() {std::cout << "JointBase" << std::endl;}
     void printName() {std::cout << name_ << std::endl;}

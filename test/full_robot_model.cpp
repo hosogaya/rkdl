@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 
-bool buildModel(rkdl::RobotModel& model);
+bool buildModel(rkdl::RobotModel& model, rkdl::InputMap& input);
 void printFrameName(const rkdl::RobotModel& model);
 void printJointName(const rkdl::RobotModel& model);
 void printRootFrame(const rkdl::RobotModel& model);
@@ -16,7 +16,8 @@ void printChildJointOfJoint(const rkdl::RobotModel& model);
 int main()
 {
     rkdl::RobotModel model;
-    if (!buildModel(model)) return 1;
+    rkdl::InputMap input;
+    if (!buildModel(model, input)) return 1;
     printFrameName(model);
     printJointName(model);
     printRootFrame(model);
@@ -27,6 +28,7 @@ int main()
     printChildJointOfJoint(model);
     
     auto start = std::chrono::system_clock::now();
+    model.updatePos(input);
     rkdl::Kinematics::updateKinematics(model);
     auto end = std::chrono::system_clock::now();
 
@@ -35,7 +37,7 @@ int main()
 }
 
 
-bool buildModel(rkdl::RobotModel& model)
+bool buildModel(rkdl::RobotModel& model, rkdl::InputMap& input)
 {
     std::vector<std::string> frame_name{
         "body", 
@@ -158,6 +160,8 @@ bool buildModel(rkdl::RobotModel& model)
         std::shared_ptr<rkdl::JointBase> j = std::make_shared<rkdl::RevoluteJoint>(revolute_joint_name[i], revolute_joint_fixed_position[i], revolute_joint_axis[i]);
         model.addJoint(j);
     }
+
+    for (const auto& s: revolute_joint_name) input.emplace(s, 0.0); 
 
     return model.initialize();
 }

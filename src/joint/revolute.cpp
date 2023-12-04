@@ -21,14 +21,14 @@ RevoluteJoint::RevoluteJoint(Name id, Vector3& fixed_position, RevoluteAxis axis
 
 RevoluteJoint::~RevoluteJoint() {}
 
-TransformMatrix RevoluteJoint::transformMatrix(const Scalar p) const
+TransformMatrix RevoluteJoint::transformMatrix(const Scalar& p) const
 {
     TransformMatrix tm;
     setTransformMatrix(tm, p);
     return tm;
 }
 
-TransformMatrix RevoluteJoint::differentialOperator(const Scalar p) const 
+TransformMatrix RevoluteJoint::differentialOperator(const Scalar& p) const 
 {
     if (axis_ == RevoluteAxis::None) {
         TransformMatrix tm;
@@ -39,12 +39,12 @@ TransformMatrix RevoluteJoint::differentialOperator(const Scalar p) const
 }
 
 
-TransformMatrix RevoluteJoint::differentialTransformMatrix(const Scalar p) const 
+TransformMatrix RevoluteJoint::differentialTransformMatrix(const Scalar& p) const 
 {
     return transformMatrix(p)*differentialOperator(p);
 }
 
-void RevoluteJoint::setTransformMatrix(TransformMatrix& tm, const Scalar p) const
+void RevoluteJoint::setTransformMatrix(TransformMatrix& tm, const Scalar& p) const
 {
     if (axis_ == RevoluteAxis::X)
     {
@@ -83,7 +83,7 @@ void RevoluteJoint::setTransformMatrix(TransformMatrix& tm, const Scalar p) cons
     }
 }
 
-void RevoluteJoint::setDifferentialOperator(TransformMatrix& tm, const Scalar p) const
+void RevoluteJoint::setDifferentialOperator(TransformMatrix& tm, const Scalar& p) const
 {
     tm.setZero();
     if (axis_ == RevoluteAxis::X)
@@ -107,19 +107,19 @@ void RevoluteJoint::setDifferentialOperator(TransformMatrix& tm, const Scalar p)
     }
 }
 
-void RevoluteJoint::setPosition(Scalar p)
+void RevoluteJoint::setPosition(const Scalar& p)
 {
     position_ = p;
     setTransformMatrix(transform_matrix_, p);
 }
 
-void RevoluteJoint::setVelocity(Scalar v)
+void RevoluteJoint::setVelocity(const Scalar& v)
 {
     velocity_ = v;
 }
 
-void RevoluteJoint::setAccelration(Scalar a) {accel_ = a;}
-void RevoluteJoint::setTorque(Scalar t) {torque_ = t;}
+void RevoluteJoint::setAccelration(const Scalar& a) {accel_ = a;}
+void RevoluteJoint::setTorque(const Scalar& t) {torque_ = t;}
 
 
 }

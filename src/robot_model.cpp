@@ -31,9 +31,28 @@ bool RobotModel::initialize()
     return true;
 }
 
-bool RobotModel::updateState()
+void RobotModel::updatePos(const InputMap& pos)
 {
-    return true;
+    for (const auto& p: pos)
+    {
+        findJoint(p.first)->setPosition(p.second);
+    }
+}
+
+void RobotModel::updateVel(const InputMap& pos)
+{
+    for (const auto& p: pos)
+    {
+        findJoint(p.first)->setVelocity(p.second);
+    }
+}
+
+void RobotModel::updateTor(const InputMap& pos)
+{
+    for (const auto& p: pos)
+    {
+        findJoint(p.first)->setTorque(p.second);
+    }
 }
 
 std::shared_ptr<Frame> RobotModel::findFrame(const Name& name)

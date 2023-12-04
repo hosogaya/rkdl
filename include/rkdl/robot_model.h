@@ -18,7 +18,9 @@ public:
     void addJoint(std::shared_ptr<JointBase>& j);
     void addFrame(std::shared_ptr<Frame>& f);
     bool initialize();
-    bool updateState();
+    void updatePos(const InputMap& pos);
+    void updateVel(const InputMap& vel);
+    void updateTor(const InputMap& tor);
     std::shared_ptr<Frame> findFrame(const Name& name);
     std::shared_ptr<JointBase> findJoint(const Name& name);
 
