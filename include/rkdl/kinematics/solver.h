@@ -22,6 +22,4 @@ public:
 private:
     static bool error_;
 };
-
-bool Kinematics::error_ = false;
 }

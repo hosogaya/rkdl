@@ -1,7 +1,9 @@
 #include <rkdl/rkdl.h>
 
 #include <iostream>
+#include <chrono>
 
+bool buildModel(rkdl::RobotModel& model);
 void printFrameName(const rkdl::RobotModel& model);
 void printJointName(const rkdl::RobotModel& model);
 void printRootFrame(const rkdl::RobotModel& model);
@@ -12,6 +14,28 @@ void printParentJointOfJoint(const rkdl::RobotModel& model);
 void printChildJointOfJoint(const rkdl::RobotModel& model);
 
 int main()
+{
+    rkdl::RobotModel model;
+    if (!buildModel(model)) return 1;
+    printFrameName(model);
+    printJointName(model);
+    printRootFrame(model);
+    printTreeTypeOfFrame(model);
+    printParentFrameOfFrame(model);
+    printParentJointOfFrame(model);
+    printParentJointOfJoint(model);
+    printChildJointOfJoint(model);
+    
+    auto start = std::chrono::system_clock::now();
+    rkdl::Kinematics::updateKinematics(model);
+    auto end = std::chrono::system_clock::now();
+
+    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
+    return 0;
+}
+
+
+bool buildModel(rkdl::RobotModel& model)
 {
     std::vector<std::string> frame_name{
         "body", 
@@ -118,7 +142,7 @@ int main()
     };
 
 
-    rkdl::RobotModel model;
+    // rkdl::RobotModel model;
     for (int i=frame_name.size()-1; i>=0; --i)
     {
         std::shared_ptr<rkdl::Frame> f = std::make_shared<rkdl::Frame>(frame_name[i], parent_frame_name[i], parent_joint_name[i], mass[i], cog[i]);
@@ -135,18 +159,7 @@ int main()
         model.addJoint(j);
     }
 
-    if (!model.initialize()) return 1;
-
-    printFrameName(model);
-    printJointName(model);
-    printRootFrame(model);
-    printTreeTypeOfFrame(model);
-    printParentFrameOfFrame(model);
-    printParentJointOfFrame(model);
-    printParentJointOfJoint(model);
-    printChildJointOfJoint(model);
-    
-    return 0;
+    return model.initialize();
 }
 
 void printFrameName(const rkdl::RobotModel& model)

@@ -2,6 +2,8 @@
 
 namespace rkdl
 {
+extern bool Kinematics::error_;
+
 TransformMatrix Kinematics::transformMatrix(RobotModel& model, const Name& frame_name, const  Vector& q)
 {
     std::shared_ptr<Frame> f = model.getFrame(frame_name);
