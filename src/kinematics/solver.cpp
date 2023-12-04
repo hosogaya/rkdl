@@ -41,7 +41,7 @@ TransformMatrix Kinematics::transformMatrix(RobotModel& model, const Name& frame
 
 Vector3 Kinematics::posFK(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p)
 {
-    std::shared_ptr<Frame> f = model.findFrame(frame_name);
+    std::shared_ptr<Frame> f = model.getFrame(frame_name);
     if (f->isRoot() || q.size()<1) return Vector3(p);
     std::shared_ptr<JointBase> j = model.joints_[f->parent_frame_index_];
     
@@ -77,7 +77,7 @@ Vector3 Kinematics::posFK(RobotModel& model, const Name& frame_name, const Vecto
 
 Matrix3 Kinematics::rotFK(RobotModel& model, const Name& frame_name, const Vector& q, const Matrix3& r)
 {
-    std::shared_ptr<Frame> f = model.findFrame(frame_name);
+    std::shared_ptr<Frame> f = model.getFrame(frame_name);
     if (f->isRoot() || q.size()<1) return Matrix3(r);
     std::shared_ptr<JointBase> j = model.joints_[f->parent_frame_index_];
     
@@ -112,7 +112,7 @@ Matrix3 Kinematics::rotFK(RobotModel& model, const Name& frame_name, const Vecto
 
 TransformMatrix Kinematics::differentialTransformMatrix(RobotModel& model, const Name& frame_name, const Name& joint_name, const Vector& q)
 {
-    std::shared_ptr<Frame> f = model.findFrame(frame_name);
+    std::shared_ptr<Frame> f = model.getFrame(frame_name);
     if (f->isRoot() || q.size()<1) return TransformMatrix();
     std::shared_ptr<JointBase> j = model.joints_[f->parent_frame_index_];
     
@@ -156,7 +156,7 @@ TransformMatrix Kinematics::differentialTransformMatrix(RobotModel& model, const
 
 Jacobian Kinematics::jacobian(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p)
 {
-    std::shared_ptr<Frame> f = model.findFrame(frame_name);
+    std::shared_ptr<Frame> f = model.getFrame(frame_name);
     if (f->isRoot()) return Jacobian(3, q.size());
     std::shared_ptr<JointBase> j = model.joints_[f->parent_frame_index_];
     

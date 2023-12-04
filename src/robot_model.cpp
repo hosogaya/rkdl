@@ -35,7 +35,7 @@ void RobotModel::updatePos(const InputMap& pos)
 {
     for (const auto& p: pos)
     {
-        findJoint(p.first)->setPosition(p.second);
+        getJoint(p.first)->setPosition(p.second);
     }
 }
 
@@ -43,7 +43,7 @@ void RobotModel::updateVel(const InputMap& pos)
 {
     for (const auto& p: pos)
     {
-        findJoint(p.first)->setVelocity(p.second);
+        getJoint(p.first)->setVelocity(p.second);
     }
 }
 
@@ -51,7 +51,7 @@ void RobotModel::updateTor(const InputMap& pos)
 {
     for (const auto& p: pos)
     {
-        findJoint(p.first)->setTorque(p.second);
+        getJoint(p.first)->setTorque(p.second);
     }
 }
 
