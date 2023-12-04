@@ -15,50 +15,106 @@ int main()
 {
     std::vector<std::string> frame_name{
         "body", 
-        "lo1", "frame1-1", "frame1-2", "frame1-3"
+        "lo1", "inc1", "frame1-1", "frame1-2", "frame1-3",
+        "lo2", "inc2", "frame2-1", "frame2-2", "frame2-3",
+        "lo3", "inc3", "frame3-1", "frame3-2", "frame3-3",
+        "lo4", "inc4", "frame4-1", "frame4-2", "frame4-3",
+        "lo5", "inc5", "frame5-1", "frame5-2", "frame5-3",
+        "lo6", "inc6", "frame6-1", "frame6-2", "frame6-3"
     };
 
     std::vector<std::string> revolute_joint_name{
-        "rot1-1", "rot1-2", "rot1-3"
+        "rot1-1", "rot1-2", "rot1-3",
+        "rot2-1", "rot2-2", "rot2-3",
+        "rot3-1", "rot3-2", "rot3-3",
+        "rot4-1", "rot4-2", "rot4-3",
+        "rot5-1", "rot5-2", "rot5-3",
+        "rot6-1", "rot6-2", "rot6-3"
     };
     std::vector<std::string> fixed_joint_name{
-        "fix1"
+        "fix1-1", "fix1-2",
+        "fix2-1", "fix2-2",
+        "fix3-1", "fix3-2",
+        "fix4-1", "fix4-2",
+        "fix5-1", "fix5-2",
+        "fix6-1", "fix6-2"
     };
     std::vector<std::string> parent_frame_name{
         "none",
-        "body", "lo1", "frame1-1", "frame1-2"
+        "body", "lo1", "inc1", "frame1-1", "frame1-2",
+        "body", "lo2", "inc2", "frame2-1", "frame2-2",
+        "body", "lo3", "inc3", "frame3-1", "frame3-2",
+        "body", "lo4", "inc4", "frame4-1", "frame4-2",
+        "body", "lo5", "inc5", "frame5-1", "frame5-2",
+        "body", "lo6", "inc6", "frame6-1", "frame6-2",
     };
     std::vector<std::string> parent_joint_name{
         "none",
-        "fix1", "rot1-1", "rot1-2", "rot1-3"
+        "fix1-1", "fix1-2", "rot1-1", "rot1-2", "rot1-3",
+        "fix2-1", "fix2-2", "rot2-1", "rot2-2", "rot2-3",
+        "fix3-1", "fix3-2", "rot3-1", "rot3-2", "rot3-3",
+        "fix4-1", "fix4-2", "rot4-1", "rot4-2", "rot4-3",
+        "fix5-1", "fix5-2", "rot5-1", "rot5-2", "rot5-3",
+        "fix6-1", "fix6-2", "rot6-1", "rot6-2", "rot6-3",
     };
     std::vector<rkdl::Scalar> mass{
         1.0, 
-        1.0, 1.0, 1.0, 1.0
+        1.0, 0.0, 1.0, 1.0, 1.0,
+        1.0, 0.0, 1.0, 1.0, 1.0,
+        1.0, 0.0, 1.0, 1.0, 1.0,
+        1.0, 0.0, 1.0, 1.0, 1.0,
+        1.0, 0.0, 1.0, 1.0, 1.0,
+        1.0, 0.0, 1.0, 1.0, 1.0
     };
     
     std::vector<rkdl::Vector3> revolute_joint_fixed_position{
-        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0} 
+        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
+        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
+        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
+        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
+        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
+        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}
     };
     std::vector<rkdl::RevoluteAxis> revolute_joint_axis{
-        rkdl::RevoluteAxis::Z, rkdl::RevoluteAxis::Y, rkdl::RevoluteAxis::Z
+        rkdl::RevoluteAxis::Z, rkdl::RevoluteAxis::Y, rkdl::RevoluteAxis::Y
     };
 
     std::vector<rkdl::Vector3> fixed_joint_fixed_position{
-        {1.0, 1.0, 0.0}
+        {1.0, 1.0, 0.0}, {0.0, 0.0, 0.0},
+        {1.0, 1.0, 0.0}, {0.0, 0.0, 0.0},
+        {1.0, 1.0, 0.0}, {0.0, 0.0, 0.0},
+        {1.0, 1.0, 0.0}, {0.0, 0.0, 0.0},
+        {1.0, 1.0, 0.0}, {0.0, 0.0, 0.0},
+        {1.0, 1.0, 0.0}, {0.0, 0.0, 0.0}
     };
 
     std::vector<rkdl::Scalar> fixed_joint_rotation_rad{
-        M_PI_4
+        -M_PI_4, M_PI_4,
+        -M_PI_2, M_PI_4,
+        -3*M_PI_4, M_PI_4,
+        3*M_PI_4, M_PI_4,
+        M_PI_2, M_PI_4,
+        M_PI_4, M_PI_4
     };
     std::vector<rkdl::Vector3> fixed_joint_rotation_axis{
-        {0.0, 0.0, 1.0}
+        {0.0, 0.0, 1.0}, {0.0, 1.0, 0.0}, 
+        {0.0, 0.0, 1.0}, {0.0, 1.0, 0.0}, 
+        {0.0, 0.0, 1.0}, {0.0, 1.0, 0.0}, 
+        {0.0, 0.0, 1.0}, {0.0, 1.0, 0.0}, 
+        {0.0, 0.0, 1.0}, {0.0, 1.0, 0.0}, 
+        {0.0, 0.0, 1.0}, {0.0, 1.0, 0.0} 
     };
     std::vector<rkdl::Matrix3> fixed_joint_rotaiton_mat(fixed_joint_name.size());
     for (int i=0; i<fixed_joint_name.size(); ++i) fixed_joint_rotaiton_mat[i] = Eigen::AngleAxis<rkdl::Scalar>(fixed_joint_rotation_rad[i], fixed_joint_rotation_axis[i]).toRotationMatrix();
 
     std::vector<rkdl::Vector3> cog{
-        {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0} 
+        {0.0, 0.0, 0.0},
+        {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
+        {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
+        {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
+        {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
+        {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
+        {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}
     };
 
 
