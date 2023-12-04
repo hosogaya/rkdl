@@ -203,8 +203,8 @@ void Kinematics::updateKinematics(RobotModel& model)
     for (int i=1; i<model.frames_.size(); ++i)
     {
         std::shared_ptr<Frame> f = model.frames_[i];
-        std::shared_ptr<JointBase> pj = model.getJoint(f->parent_joint_);
-        std::shared_ptr<Frame> pf = model.getFrame(f->parent_frame_);
+        std::shared_ptr<JointBase> pj = model.getJoint(f->parent_joint_index_);
+        std::shared_ptr<Frame> pf = model.getFrame(f->parent_frame_index_);
         f->transform_matirx_ = pf->transform_matirx_*pj->transformMatrix();
     }
 }

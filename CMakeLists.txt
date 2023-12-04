@@ -40,3 +40,4 @@ function(add_rkdl_test base_name)
 endfunction()
 
 add_rkdl_test(robot_model)
+add_rkdl_test(full_robot_model)
