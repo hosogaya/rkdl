@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 project(rkdl)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON) 
 
 find_package(Eigen3 REQUIRED)
 
@@ -15,13 +16,35 @@ set(source_file
     src/kinematics/solver.cpp
 )
 
-add_library(${PROJECT_NAME} ${source_file})
+add_library(${PROJECT_NAME} SHARED ${source_file})
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     ${EIGEN3_INCLUDE_DIRS}
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    PUBLIC_HEADER
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}>
+    $<INSTALL_INTERFACE:include>
+    ${EIGEN3_INCLUDE_DIRS}
+)
+
+install(TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}-export
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+    PUBLIC_HEADER DESTINATION include
+)
+
+install(EXPORT ${PROJECT_NAME}-export
+    FILE ${PROJECT_NAME}-config.cmake
+    DESTINATION share/cmake/${PROJECT_NAME}
+    EXPORT_LINK_INTERFACE_LIBRARIES
 )
 
 function(add_rkdl_test base_name)
