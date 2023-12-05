@@ -30,6 +30,7 @@ int main()
     auto start = std::chrono::system_clock::now();
     model.updatePos(input);
     rkdl::Kinematics::updateKinematics(model);
+    for (const auto& f: model.frames_) std::cout << f->transform_matirx_.rotation_ << " " << f->transform_matirx_.translation_ << std::endl;
     auto end = std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
@@ -104,6 +105,10 @@ bool buildModel(rkdl::RobotModel& model, rkdl::InputMap& input)
     std::vector<rkdl::RevoluteAxis> revolute_joint_axis{
         rkdl::RevoluteAxis::Z, rkdl::RevoluteAxis::Y, rkdl::RevoluteAxis::Y
     };
+
+    // std::vector<rkdl::Vector3> revolute_joint_axis{
+    //     {0.0, 0.0, 1.0}, {0.0, 1.0, 0.1}, {0.0, 1.0, 0.0}
+    // };
 
     std::vector<rkdl::Vector3> fixed_joint_fixed_position{
         {1.0, 1.0, 0.0}, 
