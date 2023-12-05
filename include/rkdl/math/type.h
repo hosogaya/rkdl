@@ -19,6 +19,7 @@ using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
 using Vector4 = Eigen::Matrix<Scalar, 4, 1>;
 using Matrix3 = Eigen::Matrix<Scalar, 3, 3>;
 using Jacobian = Eigen::Matrix<Scalar, 3, Eigen::Dynamic>;
+using TransformMatrix = Eigen::Matrix<Scalar, 4, 4>;
 using InputMap = std::unordered_map<Name, Scalar>;
 
 typedef enum

@@ -52,26 +52,27 @@ Vector3 Kinematics::posFK(RobotModel& model, const Name& frame_name, const Vecto
         return Vector3(p);
     }
 
-    Vector3 result;
-    if (j->joint_type_!=JointType::Fixed)
-    {
-        --q_ind;
-        result = j->transformMatrix(q[q_ind])*p;
-    }
-    result = j->transformMatrix()*p;
+    Vector4 result{p.x(), p.y(), p.z(), 1.0};
+    TransformMatrix tm = transformMatrix(model, frame_name, q);
+    // if (j->joint_type_!=JointType::Fixed)
+    // {
+    //     --q_ind;
+    //     result = j->transformMatrix(q[q_ind])*result;
+    // }
+    // result = j->transformMatrix()*result;
     
-    while(!j->isRoot())
-    {
-        j = model.joints_[j->parent_joint_index_];
-        if (j->joint_type_!=JointType::Fixed)
-        {
-            --q_ind;
-            result = j->transformMatrix(q[q_ind])*result;
-        }
-        else result = j->transformMatrix()*result;
-    }
+    // while(!j->isRoot())
+    // {
+    //     j = model.joints_[j->parent_joint_index_];
+    //     if (j->joint_type_!=JointType::Fixed)
+    //     {
+    //         --q_ind;
+    //         result = j->transformMatrix(q[q_ind])*result;
+    //     }
+    //     else result = j->transformMatrix()*result;
+    // }
 
-    return result;
+    return (tm*result).topRows(3);
 }
 
 
@@ -88,26 +89,27 @@ Matrix3 Kinematics::rotFK(RobotModel& model, const Name& frame_name, const Vecto
         return Matrix3(r);
     }
 
-    Matrix3 result;
-    if (j->joint_type_!=JointType::Fixed)
-    {
-        --q_ind;
-        result = j->transformMatrix(q[q_ind])*r;
-    }
-    else result = j->transformMatrix()*r;
+    // Matrix3 result;
+    // if (j->joint_type_!=JointType::Fixed)
+    // {
+    //     --q_ind;
+    //     result = j->transformMatrix(q[q_ind])*r;
+    // }
+    // else result = j->transformMatrix()*r;
     
-    while(!j->isRoot())
-    {
-        j = model.joints_[j->parent_joint_index_];
-        if (j->joint_type_!=JointType::Fixed)
-        {
-            --q_ind;
-            result = j->transformMatrix(q[q_ind])*result;
-        }
-        else result = j->transformMatrix()*result;
-    }
+    // while(!j->isRoot())
+    // {
+    //     j = model.joints_[j->parent_joint_index_];
+    //     if (j->joint_type_!=JointType::Fixed)
+    //     {
+    //         --q_ind;
+    //         result = j->transformMatrix(q[q_ind])*result;
+    //     }
+    //     else result = j->transformMatrix()*result;
+    // }
+    TransformMatrix tm = transformMatrix(model, frame_name, q);
 
-    return result;   
+    return tm.topLeftCorner(3,3)*r;   
 }
 
 TransformMatrix Kinematics::differentialTransformMatrix(RobotModel& model, const Name& frame_name, const Name& joint_name, const Vector& q)
@@ -168,33 +170,56 @@ Jacobian Kinematics::jacobian(RobotModel& model, const Name& frame_name, const V
         return Jacobian(3, q.size());;
     }
 
+    const Vector4 tp{p.x(), p.y(), p.z(), 1.0};
     Jacobian result(3, q.size());
-    for (int i=0; valid_size; ++i) result.col(i)=p;
+    TransformMatrix tm;
     if (j->joint_type_ != JointType::Fixed)
-    {
-        --q_ind;
-        Vector3 t(result.col(q_ind));
-        result.col(q_ind) = j->differentialOperator(q[q_ind])*t;
-        result = j->transformMatrix(q[q_ind])*result;
+    {   
+        q_ind--;
+        tm = differentialTransformMatrix(model, frame_name, j->name_,q);
+        result.col(q_ind) = (differentialTransformMatrix(model, frame_name, j->name_,q)*tp).topRows(3);
     }
-    else result = j->transformMatrix()*result;
-    // result = j->transformMatrix()*result.(valid_size);
 
-    while(!j->isRoot())
+    while (j->isRoot())
     {
         j = model.joints_[j->parent_joint_index_];
-        if (j->joint_type_!=JointType::Fixed)
+        if (j->joint_type_ != JointType::Fixed)
         {
             --q_ind;
-            if (q_ind < 0) break;
-            Vector3 t(result.col(q_ind));
-            result.col(q_ind) = j->differentialOperator(q[q_ind])*t;
-            result = j->transformMatrix(q[q_ind])*result;
+            result.col(q_ind) = (differentialTransformMatrix(model, frame_name, j->name_, q)*tp).topRows(3);
         }
-        else result = j->transformMatrix()*result;
     }
 
     return result;
+    
+
+    // Jacobian result(3, q.size());
+    // for (int i=0; valid_size; ++i) result.col(i)=p;
+    // if (j->joint_type_ != JointType::Fixed)
+    // {
+    //     --q_ind;
+    //     Vector3 t(result.col(q_ind));
+    //     result.col(q_ind) = j->differentialOperator(q[q_ind])*t;
+    //     result = j->transformMatrix(q[q_ind])*result;
+    // }
+    // else result = j->transformMatrix()*result;
+    // // result = j->transformMatrix()*result.(valid_size);
+
+    // while(!j->isRoot())
+    // {
+    //     j = model.joints_[j->parent_joint_index_];
+    //     if (j->joint_type_!=JointType::Fixed)
+    //     {
+    //         --q_ind;
+    //         if (q_ind < 0) break;
+    //         Vector3 t(result.col(q_ind));
+    //         result.col(q_ind) = j->differentialOperator(q[q_ind])*t;
+    //         result = j->transformMatrix(q[q_ind])*result;
+    //     }
+    //     else result = j->transformMatrix()*result;
+    // }
+
+    // return result;
 }
 
 void Kinematics::updateKinematics(RobotModel& model)

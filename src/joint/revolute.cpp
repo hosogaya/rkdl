@@ -5,8 +5,8 @@ namespace rkdl
 RevoluteJoint::RevoluteJoint(Name id, Vector3& fixed_position, Vector3& axis_vec)
 : JointBase(id, JointType::Revolute, fixed_position), axis_vec_(axis_vec), axis_(RevoluteAxis::None)
 {
-    transform_matrix_.rotation_.setIdentity();
-    transform_matrix_.translation_ = fixed_position;
+    transform_matrix_.topLeftCorner(3,3).setIdentity();
+    transform_matrix_.topRightCorner(3,1) = fixed_position;
 
     setDifferentialOperator(differential_operator_);
 }
@@ -14,8 +14,8 @@ RevoluteJoint::RevoluteJoint(Name id, Vector3& fixed_position, Vector3& axis_vec
 RevoluteJoint::RevoluteJoint(Name id, Vector3& fixed_position, RevoluteAxis axis)
 : JointBase(id, JointType::Revolute, fixed_position), axis_(axis)
 {
-    transform_matrix_.rotation_.setIdentity();
-    transform_matrix_.translation_ = fixed_position;
+    transform_matrix_.topLeftCorner(3,3).setIdentity();
+    transform_matrix_.topRightCorner(3,1) = fixed_position;
     setDifferentialOperator(differential_operator_);
 }
 
@@ -48,27 +48,27 @@ void RevoluteJoint::setTransformMatrix(TransformMatrix& tm, const Scalar& p) con
 {
     if (axis_ == RevoluteAxis::X)
     {
-        tm.rotation_(0,0) = 1.0;
-        tm.rotation_(1,1) = std::cos(p);
-        tm.rotation_(1,2) = -std::sin(p);
-        tm.rotation_(2,1) = -tm.rotation_(1,2);
-        tm.rotation_(2,2) = tm.rotation_(1,1);
+        tm(0,0) = 1.0;
+        tm(1,1) = std::cos(p);
+        tm(1,2) = -std::sin(p);
+        tm(2,1) = -tm(1,2);
+        tm(2,2) = tm(1,1);
     }
     else if (axis_ == RevoluteAxis::Y)
     {
-        tm.rotation_(0,0) = std::cos(p);
-        tm.rotation_(0,2) = std::sin(p);
-        tm.rotation_(1,1) = 1.0;
-        tm.rotation_(2,0) = -tm.rotation_(0,2);
-        tm.rotation_(2,2) = tm.rotation_(0,0);
+        tm(0,0) = std::cos(p);
+        tm(0,2) = std::sin(p);
+        tm(1,1) = 1.0;
+        tm(2,0) = -tm(0,2);
+        tm(2,2) = tm(0,0);
     }
     else if (axis_ == RevoluteAxis::Z)
     {
-        tm.rotation_(0,0) = std::cos(p);
-        tm.rotation_(0,1) = -std::sin(p);
-        tm.rotation_(1,0) = -tm.rotation_(0,1);
-        tm.rotation_(1,1) = tm.rotation_(0,0);
-        tm.rotation_(2,2) = 1.0;
+        tm(0,0) = std::cos(p);
+        tm(0,1) = -std::sin(p);
+        tm(1,0) = -tm(0,1);
+        tm(1,1) = tm(0,0);
+        tm(2,2) = 1.0;
     }
     else if (axis_ == RevoluteAxis::None)
     {
@@ -78,8 +78,8 @@ void RevoluteJoint::setTransformMatrix(TransformMatrix& tm, const Scalar& p) con
          *        s, c, 0,
          *        0, 0, 1
         */
-        tm.setRotationMatrix(p, axis_vec_);
-        tm.translation_ = fixed_position_;   
+        tm.topLeftCorner(3,3) = Eigen::AngleAxis<Scalar>(p, axis_vec_).toRotationMatrix();
+        tm.topRightCorner(3,1) = fixed_position_;   
     }
 }
 
@@ -88,22 +88,22 @@ void RevoluteJoint::setDifferentialOperator(TransformMatrix& tm, const Scalar& p
     tm.setZero();
     if (axis_ == RevoluteAxis::X)
     {
-        tm.rotation_(1,2) =-1.0;
-        tm.rotation_(2,1) = 1.0;
+        tm(1,2) =-1.0;
+        tm(2,1) = 1.0;
     }
     else if (axis_ == RevoluteAxis::Y)
     {
-        tm.rotation_(0,2) = 1.0;
-        tm.rotation_(2,0) =-1.0;
+        tm(0,2) = 1.0;
+        tm(2,0) =-1.0;
     }
     else if (axis_ == RevoluteAxis::Z)
     {
-        tm.rotation_(0,1) =-1.0;
-        tm.rotation_(1,0) = 1.0;
+        tm(0,1) =-1.0;
+        tm(1,0) = 1.0;
     }
     else if (axis_ == RevoluteAxis::None)
     {
-        tm.setRotationMatrix(p+M_PI_2, axis_vec_);
+        tm.topLeftCorner(3,3) = Eigen::AngleAxis<Scalar>(p+M_PI_2, axis_vec_).toRotationMatrix();
     }
 }
 

@@ -6,8 +6,8 @@ FixedJoint::FixedJoint(Name id, Vector3& fixed_position, Matrix3& rotation_matri
 :JointBase(id, JointType::Fixed, fixed_position)
 {
     // set transform matrix
-    transform_matrix_.rotation_ = rotation_matrix;
-    transform_matrix_.translation_ = fixed_position_;
+    transform_matrix_.topLeftCorner(3,3) = rotation_matrix;
+    transform_matrix_.topRightCorner(3,1) = fixed_position_;
 
     differential_operator_.setZero();
 }

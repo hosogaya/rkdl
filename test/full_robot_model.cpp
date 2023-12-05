@@ -30,7 +30,7 @@ int main()
     auto start = std::chrono::system_clock::now();
     model.updatePos(input);
     rkdl::Kinematics::updateKinematics(model);
-    for (const auto& f: model.frames_) std::cout << f->transform_matirx_.rotation_ << " " << f->transform_matirx_.translation_ << std::endl;
+    for (const auto& f: model.frames_) std::cout << f->transform_matirx_ << std::endl;
     auto end = std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
