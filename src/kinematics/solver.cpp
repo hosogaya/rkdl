@@ -209,4 +209,26 @@ void Kinematics::updateKinematics(RobotModel& model)
     }
 }
 
+Jacobian Kinematics::jacobian(const RobotModel& model, const Name& frame_name, const Vector3& p)
+{
+    std::shared_ptr<Frame> f = model.getFrame(frame_name);
+    std::shared_ptr<JointBase> j = model.getJoint(f->parent_joint_index_);
+    Jacobian result(3, j->pajn_);
+
+    int index = j->pajn_;
+    while (true)
+    {
+        if (j->joint_type_ != JointType::Fixed)
+        {
+            --index;
+            const TransformMatrix& pt = model.getFrame(f->parent_frame_index_)->transform_matirx_;
+            result.col(index) = pt.inverse()*f->transform_matirx_*j->differentialOperator()*pt*p;
+        }
+        if (index == 0) break;
+        if (j->isRoot()) {error_=true; break;}
+        f = model.getFrame(f->parent_frame_index_);
+        j = model.getJoint(f->parent_joint_index_);
+    }
+    return result;
+}
 }

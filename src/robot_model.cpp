@@ -31,7 +31,7 @@ bool RobotModel::initialize()
     return true;
 }
 
-void RobotModel::updatePos(const InputMap& pos)
+void RobotModel::updatePos(const ActuatedJointMap& pos)
 {
     for (const auto& p: pos)
     {
@@ -39,7 +39,7 @@ void RobotModel::updatePos(const InputMap& pos)
     }
 }
 
-void RobotModel::updateVel(const InputMap& pos)
+void RobotModel::updateVel(const ActuatedJointMap& pos)
 {
     for (const auto& p: pos)
     {
@@ -47,7 +47,7 @@ void RobotModel::updateVel(const InputMap& pos)
     }
 }
 
-void RobotModel::updateTor(const InputMap& pos)
+void RobotModel::updateTor(const ActuatedJointMap& pos)
 {
     for (const auto& p: pos)
     {

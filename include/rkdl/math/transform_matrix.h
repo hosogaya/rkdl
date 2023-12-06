@@ -50,7 +50,7 @@ public:
         translation_.setZero();
     }
 
-    TransformMatrix inverse()
+    TransformMatrix inverse() const
     {
         TransformMatrix temp;
         temp.rotation_ = rotation_.transpose();

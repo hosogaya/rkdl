@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 
-bool buildModel(rkdl::RobotModel& model, rkdl::InputMap& input);
+bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input);
 void printFrameName(const rkdl::RobotModel& model);
 void printJointName(const rkdl::RobotModel& model);
 void printRootFrame(const rkdl::RobotModel& model);
@@ -16,7 +16,7 @@ void printChildJointOfJoint(const rkdl::RobotModel& model);
 int main()
 {
     rkdl::RobotModel model;
-    rkdl::InputMap input;
+    rkdl::ActuatedJointMap input;
     if (!buildModel(model, input)) return 1;
     printFrameName(model);
     printJointName(model);
@@ -38,7 +38,7 @@ int main()
 }
 
 
-bool buildModel(rkdl::RobotModel& model, rkdl::InputMap& input)
+bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input)
 {
     std::vector<std::string> frame_name{
         "body", 

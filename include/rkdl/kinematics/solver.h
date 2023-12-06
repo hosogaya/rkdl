@@ -17,6 +17,7 @@ public:
     static Jacobian jacobian(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p);
 
     static void updateKinematics(RobotModel& model);
+    static Jacobian jacobian(const RobotModel& model, const Name& frame_name, const Vector3& p);
 
     static bool error() {return error_;}
 private:
