@@ -20,7 +20,8 @@ using Vector4 = Eigen::Matrix<Scalar, 4, 1>;
 using Matrix3 = Eigen::Matrix<Scalar, 3, 3>;
 using Jacobian = Eigen::Matrix<Scalar, 3, Eigen::Dynamic>;
 using ActuatedJointMap = std::unordered_map<Name, Scalar>;
-
+using FootMap = std::unordered_map<rkdl::Name, rkdl::Vector3>;
+using Quaternion = Eigen::Quaternion<Scalar>;
 typedef enum
 {
     Root=0,

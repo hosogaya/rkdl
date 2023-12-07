@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 
-bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input);
+bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::FootMap& feet);
 void printFrameName(const rkdl::RobotModel& model);
 void printJointName(const rkdl::RobotModel& model);
 void printRootFrame(const rkdl::RobotModel& model);
@@ -17,20 +17,31 @@ int main()
 {
     rkdl::RobotModel model;
     rkdl::ActuatedJointMap input;
-    if (!buildModel(model, input)) return 1;
-    printFrameName(model);
-    printJointName(model);
-    printRootFrame(model);
-    printTreeTypeOfFrame(model);
-    printParentFrameOfFrame(model);
-    printParentJointOfFrame(model);
-    printParentJointOfJoint(model);
-    printChildJointOfJoint(model);
-    
+    rkdl::FootMap feet;
+    if (!buildModel(model, input, feet)) return 1;
+
+    // printFrameName(model);
+    // printJointName(model);
+    // printRootFrame(model);
+    // printTreeTypeOfFrame(model);
+    // printParentFrameOfFrame(model);
+    // printParentJointOfFrame(model);
+    // printParentJointOfJoint(model);
+    // printChildJointOfJoint(model);
+    for (auto& i: input) i.second = M_PI_4;
     auto start = std::chrono::system_clock::now();
     model.updatePos(input);
     rkdl::Kinematics::updateKinematics(model);
-    for (const auto& f: model.frames_) {f->transform_matirx_.rotation_.eval(); f->transform_matirx_.translation_.eval();}
+    for (const auto& f: feet) 
+    {
+        // rkdl::Vector3 fk = model.getFrame(f.first)->transform_matirx_*f.second;
+        // fk.eval();
+        for (int i=0; i<500; ++i)
+        {
+            rkdl::Jacobian jac = rkdl::Kinematics::jacobian(model, f.first, f.second);
+            // jac.eval();
+        }
+    }
     auto end = std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
@@ -38,7 +49,7 @@ int main()
 }
 
 
-bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input)
+bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::FootMap& feet)
 {
     std::vector<std::string> frame_name{
         "body", 
@@ -48,6 +59,16 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input)
         "lo4", "frame4-1", "frame4-2", "frame4-3",
         "lo5", "frame5-1", "frame5-2", "frame5-3",
         "lo6", "frame6-1", "frame6-2", "frame6-3"
+    };
+
+    std::vector<std::string> foot_names
+    {
+        "frame1-3",
+        "frame2-3",
+        "frame3-3",
+        "frame4-3",
+        "frame5-3",
+        "frame6-3"
     };
 
     std::vector<std::string> revolute_joint_name{
@@ -95,14 +116,19 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input)
     };
     
     std::vector<rkdl::Vector3> revolute_joint_fixed_position{
-        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
-        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
-        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
-        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
-        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
-        {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}
+        {0.0, 0.0, 0.0}, {60.504, 0.0, 60.566}, {0.0, 0.0, 220.0},
+        {0.0, 0.0, 0.0}, {60.504, 0.0, 60.566}, {0.0, 0.0, 220.0},
+        {0.0, 0.0, 0.0}, {60.504, 0.0, 60.566}, {0.0, 0.0, 220.0},
+        {0.0, 0.0, 0.0}, {60.504, 0.0, 60.566}, {0.0, 0.0, 220.0},
+        {0.0, 0.0, 0.0}, {60.504, 0.0, 60.566}, {0.0, 0.0, 220.0},
+        {0.0, 0.0, 0.0}, {60.504, 0.0, 60.566}, {0.0, 0.0, 220.0}
     };
     std::vector<rkdl::RevoluteAxis> revolute_joint_axis{
+        rkdl::RevoluteAxis::Z, rkdl::RevoluteAxis::Y, rkdl::RevoluteAxis::Y,
+        rkdl::RevoluteAxis::Z, rkdl::RevoluteAxis::Y, rkdl::RevoluteAxis::Y,
+        rkdl::RevoluteAxis::Z, rkdl::RevoluteAxis::Y, rkdl::RevoluteAxis::Y,
+        rkdl::RevoluteAxis::Z, rkdl::RevoluteAxis::Y, rkdl::RevoluteAxis::Y,
+        rkdl::RevoluteAxis::Z, rkdl::RevoluteAxis::Y, rkdl::RevoluteAxis::Y,
         rkdl::RevoluteAxis::Z, rkdl::RevoluteAxis::Y, rkdl::RevoluteAxis::Y
     };
 
@@ -111,32 +137,34 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input)
     // };
 
     std::vector<rkdl::Vector3> fixed_joint_fixed_position{
-        {1.0, 1.0, 0.0}, 
-        {1.0, 1.0, 0.0}, 
-        {1.0, 1.0, 0.0}, 
-        {1.0, 1.0, 0.0}, 
-        {1.0, 1.0, 0.0}, 
-        {1.0, 1.0, 0.0}
+        { 160.0, -59.27, -42.694}, 
+        {   0.0, -59.27, -42.694}, 
+        {-160.0, -59.27, -42.694}, 
+        {-160.0,  59.27, -42.694}, 
+        {   0.0,  59.27, -42.694}, 
+        { 160.0,  59.27, -42.694}
     };
 
-    std::vector<rkdl::Scalar> fixed_joint_rotation_rad{
-        -M_PI_4,
-        -M_PI_2,
-        -3*M_PI_4,
-        3*M_PI_4, 
-        M_PI_2,
-        M_PI_4
+    std::vector<rkdl::Scalar> fixed_joint_rotation_rad1
+    {
+        -M_PI_4, -M_PI_2, -3*M_PI_4,
+        3*M_PI_4, M_PI_2, M_PI_4
     };
-    std::vector<rkdl::Vector3> fixed_joint_rotation_axis{
-        {0.0, 0.0, 1.0}, 
-        {0.0, 0.0, 1.0}, 
-        {0.0, 0.0, 1.0}, 
-        {0.0, 0.0, 1.0}, 
-        {0.0, 0.0, 1.0}, 
-        {0.0, 0.0, 1.0}
+    std::vector<rkdl::Scalar> fixed_joint_rotation_rad2
+    {
+        M_PI_4, M_PI_4, M_PI_4, 
+        M_PI_4, M_PI_4, M_PI_4
     };
+    std::vector<rkdl::Matrix3> fixed_joint_rotation1(fixed_joint_rotation_rad1.size());
+    for (int i=0; i<fixed_joint_rotation_rad1.size(); ++i)
+        fixed_joint_rotation1[i] = Eigen::AngleAxis<rkdl::Scalar>(fixed_joint_rotation_rad1[i], rkdl::Vector3::UnitZ());
+
+    std::vector<rkdl::Matrix3> fixed_joint_rotation2(fixed_joint_rotation_rad2.size());
+    for (int i=0; i<fixed_joint_rotation_rad2.size(); ++i)
+        fixed_joint_rotation2[i] = Eigen::AngleAxis<rkdl::Scalar>(fixed_joint_rotation_rad2[i], rkdl::Vector3::UnitY());
+
     std::vector<rkdl::Matrix3> fixed_joint_rotaiton_mat(fixed_joint_name.size());
-    for (int i=0; i<fixed_joint_name.size(); ++i) fixed_joint_rotaiton_mat[i] = Eigen::AngleAxis<rkdl::Scalar>(fixed_joint_rotation_rad[i], fixed_joint_rotation_axis[i]).toRotationMatrix();
+    for (int i=0; i<fixed_joint_name.size(); ++i) fixed_joint_rotaiton_mat[i] = fixed_joint_rotation1[i]*fixed_joint_rotation2[i];
 
     std::vector<rkdl::Vector3> cog{
         {0.0, 0.0, 0.0},
@@ -166,7 +194,9 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input)
         model.addJoint(j);
     }
 
-    for (const auto& s: revolute_joint_name) input.emplace(s, 0.0); 
+    for (const auto& s: revolute_joint_name) input.emplace(s, 0.0);
+    rkdl::Vector3 to_foot{0.0, 0.0, 180.0}; 
+    for (const auto& s: foot_names) feet.emplace(s, to_foot);
 
     return model.initialize();
 }

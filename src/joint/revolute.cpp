@@ -103,11 +103,11 @@ void RevoluteJoint::setDifferentialOperator(TransformMatrix& tm, const Scalar& p
     }
     else if (axis_ == RevoluteAxis::None)
     {
-        tm.setRotationMatrix(p+M_PI_2, axis_vec_);
+        tm.setRotationMatrix(M_PI_2, axis_vec_);
     }
 }
 
-void RevoluteJoint::setPosition(const Scalar& p)
+void RevoluteJoint::setPosition(const Scalar& p) 
 {
     position_ = p;
     setTransformMatrix(transform_matrix_, p);
