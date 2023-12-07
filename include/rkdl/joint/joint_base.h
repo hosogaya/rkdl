@@ -1,7 +1,6 @@
 #pragma once 
 
 #include <rkdl/math/math.h>
-#include <iostream>
 
 namespace rkdl
 {
@@ -32,9 +31,6 @@ public:
     virtual void setVelocity(const Scalar& v) {}
     virtual void setAccelration(const Scalar& a) {}
     virtual void setTorque(const Scalar& t) {}
-
-    virtual void print() {std::cout << "JointBase" << std::endl;}
-    void printName() {std::cout << name_ << std::endl;}
 
     const Name name_;
     // Name parent_joint_;

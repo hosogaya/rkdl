@@ -19,7 +19,6 @@ public:
     RevoluteJoint(Name id, Vector3& fixed_position, RevoluteAxis axis);
     ~RevoluteJoint();
 
-    void print() override {std::cout << "RevoluteJoint" << std::endl;}
     TransformMatrix transformMatrix(const Scalar& p) const override;
     TransformMatrix differentialTransformMatrix(const Scalar& p) const override;
     TransformMatrix differentialOperator(const Scalar& p) const override;
