@@ -26,23 +26,44 @@ int main()
     // printTreeTypeOfFrame(model);
     // printParentFrameOfFrame(model);
     // printParentJointOfFrame(model);
-    // printParentJointOfJoint(model);
-    // printChildJointOfJoint(model);
-    for (auto& i: input) i.second = M_PI_4;
+    printParentJointOfJoint(model);
+    printChildJointOfJoint(model);
+    input.at("rot1-2") = M_PI_4;
+    input.at("rot2-2") = M_PI_4;
+    input.at("rot3-2") = M_PI_4;
+    input.at("rot4-2") = M_PI_4;
+    input.at("rot5-2") = M_PI_4;
+    input.at("rot6-2") = M_PI_4;
+
+    input.at("rot1-3") = M_PI_2;
+    input.at("rot2-3") = M_PI_2;
+    input.at("rot3-3") = M_PI_2;
+    input.at("rot4-3") = M_PI_2;
+    input.at("rot5-3") = M_PI_2;
+    input.at("rot6-3") = M_PI_2;
+
     auto start = std::chrono::system_clock::now();
     model.updatePos(input);
     rkdl::Kinematics::updateKinematics(model);
     for (const auto& f: feet) 
     {
-        // rkdl::Vector3 fk = model.getFrame(f.first)->transform_matirx_*f.second;
+        rkdl::Vector3 fk = model.getFrame(f.first)->transform_matirx_*f.second;
         // fk.eval();
-        for (int i=0; i<500; ++i)
-        {
-            rkdl::Jacobian jac = rkdl::Kinematics::jacobian(model, f.first, f.second);
-            // jac.eval();
-        }
+        rkdl::Jacobian jac = rkdl::Kinematics::jacobian(model, f.first, f.second);
+        // jac.eval();
+        std::cout << f.first << ": " << std::endl << fk.transpose() << std::endl << jac << std::endl;
     }
     auto end = std::chrono::system_clock::now();
+    rkdl::Vector q(3);
+    q << 0.0, M_PI_4, M_PI_2;
+    rkdl::Vector3 v;
+    v << 0.0, 0.0, 180.0;
+    auto tm = rkdl::Kinematics::transformMatrix(model, "frame2-3", q);
+    std::cout << tm.rotation_ << std::endl << tm.translation_.transpose() << std::endl;
+    std::cout << (tm*v).transpose() << std::endl;
+    std::cout << rkdl::Kinematics::posFK(model, "frame1-3", q, v).transpose() << std::endl;
+    std::cout << std::endl << (rkdl::Kinematics::differentialTransformMatrix(model, "frame1-3", "rot1-1", q)*v).transpose() << std::endl;
+    std::cout << std::endl << rkdl::Kinematics::jacobian(model, "frame1-3", q, v) << std::endl;;
 
     std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
     return 0;
@@ -157,11 +178,11 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::Fo
     };
     std::vector<rkdl::Matrix3> fixed_joint_rotation1(fixed_joint_rotation_rad1.size());
     for (int i=0; i<fixed_joint_rotation_rad1.size(); ++i)
-        fixed_joint_rotation1[i] = Eigen::AngleAxis<rkdl::Scalar>(fixed_joint_rotation_rad1[i], rkdl::Vector3::UnitZ());
+        fixed_joint_rotation1[i] = Eigen::AngleAxis<rkdl::Scalar>(fixed_joint_rotation_rad1[i], rkdl::Vector3::UnitZ()).toRotationMatrix();
 
     std::vector<rkdl::Matrix3> fixed_joint_rotation2(fixed_joint_rotation_rad2.size());
     for (int i=0; i<fixed_joint_rotation_rad2.size(); ++i)
-        fixed_joint_rotation2[i] = Eigen::AngleAxis<rkdl::Scalar>(fixed_joint_rotation_rad2[i], rkdl::Vector3::UnitY());
+        fixed_joint_rotation2[i] = Eigen::AngleAxis<rkdl::Scalar>(fixed_joint_rotation_rad2[i], rkdl::Vector3::UnitY()).toRotationMatrix();
 
     std::vector<rkdl::Matrix3> fixed_joint_rotaiton_mat(fixed_joint_name.size());
     for (int i=0; i<fixed_joint_name.size(); ++i) fixed_joint_rotaiton_mat[i] = fixed_joint_rotation1[i]*fixed_joint_rotation2[i];
@@ -284,6 +305,12 @@ void printParentJointOfJoint(const rkdl::RobotModel& model)
         std::cout << j->parent_joint_index_ << " ";
     }
     std::cout << std::endl;
+
+    std::cout << "pajn: ";
+    for (const auto& j: model.joints_)
+    {
+        std::cout << j->pajn_ << " ";
+    }
 }
 void printChildJointOfJoint(const rkdl::RobotModel& model)
 {
@@ -301,4 +328,10 @@ void printChildJointOfJoint(const rkdl::RobotModel& model)
         std::cout << j->child_joint_index_ << " ";
     }
     std::cout << std::endl;
+
+    std::cout << "cajn: ";
+    for (const auto& j: model.joints_)
+    {
+        std::cout << j->cajn_ << " ";
+    }
 }

@@ -25,6 +25,7 @@ TransformMatrix RevoluteJoint::transformMatrix(const Scalar& p) const
 {
     TransformMatrix tm;
     setTransformMatrix(tm, p);
+    tm.translation_ = fixed_position_;
     return tm;
 }
 
@@ -79,7 +80,6 @@ void RevoluteJoint::setTransformMatrix(TransformMatrix& tm, const Scalar& p) con
          *        0, 0, 1
         */
         tm.setRotationMatrix(p, axis_vec_);
-        tm.translation_ = fixed_position_;   
     }
 }
 

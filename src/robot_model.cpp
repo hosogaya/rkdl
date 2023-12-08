@@ -249,8 +249,8 @@ void RobotModel::setChildOfJoint()
     for (auto j: joints_)
     {
         int num = 0;
-        if (j->joint_type_ == JointType::Fixed) j->cajn_ = 0;
-        else j->cajn_ = 1;
+        if (j->joint_type_ == JointType::Fixed) num = 0;
+        else num = 1;
 
         if (j->isLeaf()) continue;
         std::shared_ptr<JointBase> tj = joints_[j->child_joint_index_];
@@ -259,7 +259,8 @@ void RobotModel::setChildOfJoint()
             if (tj->joint_type_ != JointType::Fixed) ++num;
             tj = joints_[tj->child_joint_index_];
         }
-        j->cajn_ = num;
+        if (tj->joint_type_ == JointType::Fixed) j->cajn_ = num;
+        else j->cajn_ = num+1;
     }
 }
 
@@ -292,8 +293,8 @@ void RobotModel::setParentOfJoint()
     for (auto j: joints_)
     {
         int num = 0;
-        if (j->joint_type_ == JointType::Fixed) j->pajn_ = 0;
-        else j->pajn_ = 1;
+        if (j->joint_type_ == JointType::Fixed) num = 0;
+        else num = 1;
 
         if (j->isRoot()) continue;
         std::shared_ptr<JointBase> tj = joints_[j->parent_joint_index_];
@@ -302,7 +303,8 @@ void RobotModel::setParentOfJoint()
             if (tj->joint_type_ != JointType::Fixed) ++num;
             tj = joints_[tj->parent_joint_index_];
         }
-        j->pajn_ = num;
+        if (tj->joint_type_ == JointType::Fixed) j->pajn_ = num;
+        else j->pajn_ = num+1;
     }
 }
 
