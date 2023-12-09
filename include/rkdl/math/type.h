@@ -5,6 +5,7 @@
 #else
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Sparse>
 #endif
 
 #include <string>
@@ -18,6 +19,7 @@ using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 using Vector3 = Eigen::Matrix<Scalar, 3, 1>;
 using Vector4 = Eigen::Matrix<Scalar, 4, 1>;
 using Matrix3 = Eigen::Matrix<Scalar, 3, 3>;
+using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
 using Jacobian = Eigen::Matrix<Scalar, 3, Eigen::Dynamic>;
 using ActuatedJointMap = std::unordered_map<Name, Scalar>;
 using FootMap = std::unordered_map<rkdl::Name, rkdl::Vector3>;
