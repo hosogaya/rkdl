@@ -168,6 +168,11 @@ void Kinematics::updateKinematics(RobotModel& model)
     }
 }
 
+Vector3 Kinematics::fk(const RobotModel& model, const Name& frame_name, const Vector3& p)
+{
+    return model.getFrame(frame_name)->transform_matirx_*p;
+}
+
 Jacobian Kinematics::jacobian(const RobotModel& model, const Name& frame_name, const Vector3& p)
 {
     std::shared_ptr<Frame> f = model.getFrame(frame_name);
