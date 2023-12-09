@@ -18,6 +18,15 @@ This library can handle robot tree structure which has the following specificati
 * Frame::cog_: the position of center of body relative to its origin
 * JointBase::fixed_position: the coordinate of connection position with parent frame in parent frame origin
 
+# Install
+```cmd
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
+
 # ToDo
 * Use auto: 
   * If the matrix type was declared explicitly, the benefits of lazy evaluation wolud be decreased. However, it is preferable to declare temporary objects that are used repeatedly with an explicit matrix type.
