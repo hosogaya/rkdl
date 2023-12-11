@@ -10,15 +10,15 @@ class Kinematics
 {
 public: 
     static TransformMatrix transformMatrix(RobotModel& model, const Name& frame_name, const Vector& q);
-    static Vector3 posFK(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p);
+    static Vector3 posFK(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p=Vector3::Zero());
     static Matrix3 rotFK(RobotModel& model, const Name& frame_name, const Vector& q, const Matrix3& r=Matrix3::Identity());
     // calculate dT/dq
     static TransformMatrix differentialTransformMatrix(RobotModel& model, const Name& frame_name, const Name& joint_name, const Vector& q);
-    static Jacobian jacobian(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p);
+    static Jacobian jacobian(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p=Vector3::Zero());
 
     static void updateKinematics(RobotModel& model);
-    static Vector3 fk(const RobotModel& model, const Name& frame_name, const Vector3& p);
-    static Jacobian jacobian(const RobotModel& model, const Name& frame_name, const Vector3& p);
+    static Vector3 fk(const RobotModel& model, const Name& frame_name, const Vector3& p=Vector3::Zero());
+    static Jacobian jacobian(const RobotModel& model, const Name& frame_name, const Vector3& p=Vector3::Zero());
 
     static bool error() {return error_;}
 private:

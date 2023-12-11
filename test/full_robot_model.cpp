@@ -20,12 +20,12 @@ int main()
     rkdl::FootMap feet;
     if (!buildModel(model, input, feet)) return 1;
 
-    // printFrameName(model);
-    // printJointName(model);
-    // printRootFrame(model);
-    // printTreeTypeOfFrame(model);
-    // printParentFrameOfFrame(model);
-    // printParentJointOfFrame(model);
+    printFrameName(model);
+    printJointName(model);
+    printRootFrame(model);
+    printTreeTypeOfFrame(model);
+    printParentFrameOfFrame(model);
+    printParentJointOfFrame(model);
     printParentJointOfJoint(model);
     printChildJointOfJoint(model);
     input.at("rot1-2") = M_PI_4;
@@ -47,11 +47,12 @@ int main()
     rkdl::Kinematics::updateKinematics(model);
     for (const auto& f: feet) 
     {
-        rkdl::Vector3 fk = model.getFrame(f.first)->transform_matirx_*f.second;
+        std::cout << f.first << ": " << std::endl;
+        rkdl::Vector3 fk = model.getFrame(f.first)->transform_matirx_.translation_;
         // fk.eval();
-        rkdl::Jacobian jac = rkdl::Kinematics::jacobian(model, f.first, f.second);
+        rkdl::Jacobian jac = rkdl::Kinematics::jacobian(model, f.first);
         // jac.eval();
-        std::cout << f.first << ": " << std::endl << fk.transpose() << std::endl << jac << std::endl;
+        std::cout << fk.transpose() << std::endl << jac << std::endl;
     }
     auto end = std::chrono::system_clock::now();
     rkdl::Vector q(3);
@@ -61,9 +62,9 @@ int main()
     auto tm = rkdl::Kinematics::transformMatrix(model, "frame2-3", q);
     std::cout << tm.rotation_ << std::endl << tm.translation_.transpose() << std::endl;
     std::cout << (tm*v).transpose() << std::endl;
-    std::cout << rkdl::Kinematics::posFK(model, "frame1-3", q, v).transpose() << std::endl;
+    std::cout << rkdl::Kinematics::posFK(model, "frame1-3", q).transpose() << std::endl;
     std::cout << std::endl << (rkdl::Kinematics::differentialTransformMatrix(model, "frame1-3", "rot1-1", q)*v).transpose() << std::endl;
-    std::cout << std::endl << rkdl::Kinematics::jacobian(model, "frame1-3", q, v) << std::endl;;
+    std::cout << std::endl << rkdl::Kinematics::jacobian(model, "frame1-3", q) << std::endl;;
 
     std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
     return 0;
@@ -74,22 +75,22 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::Fo
 {
     std::vector<std::string> frame_name{
         "body", 
-        "lo1", "frame1-1", "frame1-2", "frame1-3",
-        "lo2", "frame2-1", "frame2-2", "frame2-3",
-        "lo3", "frame3-1", "frame3-2", "frame3-3",
-        "lo4", "frame4-1", "frame4-2", "frame4-3",
-        "lo5", "frame5-1", "frame5-2", "frame5-3",
-        "lo6", "frame6-1", "frame6-2", "frame6-3"
+        "lo1", "frame1-1", "frame1-2", "frame1-3", "foot1", 
+        "lo2", "frame2-1", "frame2-2", "frame2-3", "foot2",
+        "lo3", "frame3-1", "frame3-2", "frame3-3", "foot3",
+        "lo4", "frame4-1", "frame4-2", "frame4-3", "foot4",
+        "lo5", "frame5-1", "frame5-2", "frame5-3", "foot5",
+        "lo6", "frame6-1", "frame6-2", "frame6-3", "foot6",
     };
 
     std::vector<std::string> foot_names
     {
-        "frame1-3",
-        "frame2-3",
-        "frame3-3",
-        "frame4-3",
-        "frame5-3",
-        "frame6-3"
+        "foot1",
+        "foot2",
+        "foot3",
+        "foot4",
+        "foot5",
+        "foot6"
     };
 
     std::vector<std::string> revolute_joint_name{
@@ -101,39 +102,39 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::Fo
         "rot6-1", "rot6-2", "rot6-3"
     };
     std::vector<std::string> fixed_joint_name{
-        "fix1-1", 
-        "fix2-1", 
-        "fix3-1", 
-        "fix4-1", 
-        "fix5-1", 
-        "fix6-1"
+        "fix1-1", "fix1-2",
+        "fix2-1", "fix2-2",
+        "fix3-1", "fix3-2",
+        "fix4-1", "fix4-2",
+        "fix5-1", "fix5-2",
+        "fix6-1", "fix6-2",
     };
     std::vector<std::string> parent_frame_name{
         "none",
-        "body", "lo1", "frame1-1", "frame1-2",
-        "body", "lo2", "frame2-1", "frame2-2",
-        "body", "lo3", "frame3-1", "frame3-2",
-        "body", "lo4", "frame4-1", "frame4-2",
-        "body", "lo5", "frame5-1", "frame5-2",
-        "body", "lo6", "frame6-1", "frame6-2",
+        "body", "lo1", "frame1-1", "frame1-2", "frame1-3",
+        "body", "lo2", "frame2-1", "frame2-2", "frame2-3",
+        "body", "lo3", "frame3-1", "frame3-2", "frame3-3",
+        "body", "lo4", "frame4-1", "frame4-2", "frame4-3",
+        "body", "lo5", "frame5-1", "frame5-2", "frame5-3",
+        "body", "lo6", "frame6-1", "frame6-2", "frame6-3"
     };
     std::vector<std::string> parent_joint_name{
         "none",
-        "fix1-1", "rot1-1", "rot1-2", "rot1-3",
-        "fix2-1", "rot2-1", "rot2-2", "rot2-3",
-        "fix3-1", "rot3-1", "rot3-2", "rot3-3",
-        "fix4-1", "rot4-1", "rot4-2", "rot4-3",
-        "fix5-1", "rot5-1", "rot5-2", "rot5-3",
-        "fix6-1", "rot6-1", "rot6-2", "rot6-3",
+        "fix1-1", "rot1-1", "rot1-2", "rot1-3", "fix1-2",
+        "fix2-1", "rot2-1", "rot2-2", "rot2-3", "fix2-2",
+        "fix3-1", "rot3-1", "rot3-2", "rot3-3", "fix3-2",
+        "fix4-1", "rot4-1", "rot4-2", "rot4-3", "fix4-2",
+        "fix5-1", "rot5-1", "rot5-2", "rot5-3", "fix5-2",
+        "fix6-1", "rot6-1", "rot6-2", "rot6-3", "fix6-2"
     };
     std::vector<rkdl::Scalar> mass{
         1.0, 
-        1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0
+        0.0, 1.0, 1.0, 1.0, 0.0, 
+        0.0, 1.0, 1.0, 1.0, 0.0,
+        0.0, 1.0, 1.0, 1.0, 0.0,
+        0.0, 1.0, 1.0, 1.0, 0.0,
+        0.0, 1.0, 1.0, 1.0, 0.0,
+        0.0, 1.0, 1.0, 1.0, 0.0
     };
     
     std::vector<rkdl::Vector3> revolute_joint_fixed_position{
@@ -158,23 +159,31 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::Fo
     // };
 
     std::vector<rkdl::Vector3> fixed_joint_fixed_position{
-        { 160.0, -59.27, -42.694}, 
-        {   0.0, -59.27, -42.694}, 
-        {-160.0, -59.27, -42.694}, 
-        {-160.0,  59.27, -42.694}, 
-        {   0.0,  59.27, -42.694}, 
-        { 160.0,  59.27, -42.694}
+        { 160.0, -59.27, -42.694}, {0.0, 0.0, 180.0},
+        {   0.0, -59.27, -42.694}, {0.0, 0.0, 180.0},
+        {-160.0, -59.27, -42.694}, {0.0, 0.0, 180.0},
+        {-160.0,  59.27, -42.694}, {0.0, 0.0, 180.0},
+        {   0.0,  59.27, -42.694}, {0.0, 0.0, 180.0},
+        { 160.0,  59.27, -42.694}, {0.0, 0.0, 180.0}
     };
 
     std::vector<rkdl::Scalar> fixed_joint_rotation_rad1
     {
-        -M_PI_4, -M_PI_2, -3*M_PI_4,
-        3*M_PI_4, M_PI_2, M_PI_4
+          -M_PI_4, 0.0, 
+          -M_PI_2, 0.0, 
+        -3*M_PI_4, 0.0, 
+         3*M_PI_4, 0.0,
+           M_PI_2, 0.0,
+           M_PI_4, 0.0
     };
     std::vector<rkdl::Scalar> fixed_joint_rotation_rad2
     {
-        M_PI_4, M_PI_4, M_PI_4, 
-        M_PI_4, M_PI_4, M_PI_4
+        M_PI_4, 0.0,
+        M_PI_4, 0.0,
+        M_PI_4, 0.0,
+        M_PI_4, 0.0,
+        M_PI_4, 0.0,
+        M_PI_4, 0.0
     };
     std::vector<rkdl::Matrix3> fixed_joint_rotation1(fixed_joint_rotation_rad1.size());
     for (int i=0; i<fixed_joint_rotation_rad1.size(); ++i)
@@ -189,12 +198,12 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::Fo
 
     std::vector<rkdl::Vector3> cog{
         {0.0, 0.0, 0.0},
-        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
-        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
-        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
-        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
-        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0},
-        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}
+        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.0, 0.0, 0.0},
+        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.0, 0.0, 0.0},
+        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.0, 0.0, 0.0},
+        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.0, 0.0, 0.0},
+        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.0, 0.0, 0.0},
+        {0.0, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.5, 0.0, 0.0}, {0.0, 0.0, 0.0}
     };
 
 
@@ -311,6 +320,7 @@ void printParentJointOfJoint(const rkdl::RobotModel& model)
     {
         std::cout << j->pajn_ << " ";
     }
+    std::cout << std::endl;
 }
 void printChildJointOfJoint(const rkdl::RobotModel& model)
 {
@@ -334,4 +344,5 @@ void printChildJointOfJoint(const rkdl::RobotModel& model)
     {
         std::cout << j->cajn_ << " ";
     }
+    std::cout << std::endl;
 }

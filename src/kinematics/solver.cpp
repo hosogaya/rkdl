@@ -99,7 +99,6 @@ TransformMatrix Kinematics::differentialTransformMatrix(RobotModel& model, const
     return result;
 }
 
-
 Jacobian Kinematics::jacobian(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p)
 {
     std::shared_ptr<Frame> f = model.getFrame(frame_name);
