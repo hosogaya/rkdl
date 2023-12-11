@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 
-bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::FootMap& feet);
+bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, std::vector<rkdl::Name>& feet);
 void printFrameName(const rkdl::RobotModel& model);
 void printJointName(const rkdl::RobotModel& model);
 void printRootFrame(const rkdl::RobotModel& model);
@@ -17,7 +17,7 @@ int main()
 {
     rkdl::RobotModel model;
     rkdl::ActuatedJointMap input;
-    rkdl::FootMap feet;
+    std::vector<rkdl::Name> feet;
     if (!buildModel(model, input, feet)) return 1;
 
     printFrameName(model);
@@ -47,10 +47,10 @@ int main()
     rkdl::Kinematics::updateKinematics(model);
     for (const auto& f: feet) 
     {
-        std::cout << f.first << ": " << std::endl;
-        rkdl::Vector3 fk = model.getFrame(f.first)->transform_matirx_.translation_;
+        std::cout << f << ": " << std::endl;
+        rkdl::Vector3 fk = model.getFrame(f)->transform_matirx_.translation_;
         // fk.eval();
-        rkdl::Jacobian jac = rkdl::Kinematics::jacobian(model, f.first);
+        rkdl::Jacobian jac = rkdl::Kinematics::jacobian(model, f);
         // jac.eval();
         std::cout << fk.transpose() << std::endl << jac << std::endl;
     }
@@ -71,7 +71,7 @@ int main()
 }
 
 
-bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::FootMap& feet)
+bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, std::vector<rkdl::Name>& feet)
 {
     std::vector<std::string> frame_name{
         "body", 
@@ -225,8 +225,7 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, rkdl::Fo
     }
 
     for (const auto& s: revolute_joint_name) input.emplace(s, 0.0);
-    rkdl::Vector3 to_foot{0.0, 0.0, 180.0}; 
-    for (const auto& s: foot_names) feet.emplace(s, to_foot);
+    feet = foot_names;
 
     return model.initialize();
 }
