@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 
-bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, std::vector<rkdl::Name>& feet);
+bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, std::vector<rkdl::Name>& foot_names);
 void printFrameName(const rkdl::RobotModel& model);
 void printJointName(const rkdl::RobotModel& model);
 void printRootFrame(const rkdl::RobotModel& model);
@@ -17,8 +17,8 @@ int main()
 {
     rkdl::RobotModel model;
     rkdl::ActuatedJointMap input;
-    std::vector<rkdl::Name> feet;
-    if (!buildModel(model, input, feet)) return 1;
+    std::vector<rkdl::Name> foot_names;
+    if (!buildModel(model, input, foot_names)) return 1;
 
     printFrameName(model);
     printJointName(model);
@@ -45,7 +45,7 @@ int main()
     auto start = std::chrono::system_clock::now();
     model.updatePos(input);
     rkdl::Kinematics::updateKinematics(model);
-    for (const auto& f: feet) 
+    for (const auto& f: foot_names) 
     {
         std::cout << f << ": " << std::endl;
         rkdl::Vector3 fk = model.getFrame(f)->transform_matirx_.translation_;
@@ -71,7 +71,7 @@ int main()
 }
 
 
-bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, std::vector<rkdl::Name>& feet)
+bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, std::vector<rkdl::Name>& foot_names)
 {
     std::vector<std::string> frame_name{
         "body", 
@@ -83,7 +83,7 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, std::vec
         "lo6", "frame6-1", "frame6-2", "frame6-3", "foot6",
     };
 
-    std::vector<std::string> foot_names
+    foot_names = 
     {
         "foot1",
         "foot2",
@@ -225,7 +225,6 @@ bool buildModel(rkdl::RobotModel& model, rkdl::ActuatedJointMap& input, std::vec
     }
 
     for (const auto& s: revolute_joint_name) input.emplace(s, 0.0);
-    feet = foot_names;
 
     return model.initialize();
 }

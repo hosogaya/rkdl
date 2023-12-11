@@ -16,6 +16,21 @@ void RobotModel::addJoint(std::shared_ptr<JointBase>& j)
     joints_.emplace_back(j);
 }
 
+ActuatedJointMap RobotModel::createActuatedJointMap() const
+{
+    ActuatedJointMap map;
+    for (const auto& j: joints_)
+    {
+        if (j->joint_type_ != JointType::Fixed)
+        {
+            map.emplace(j->name_, 0.0);
+        }
+    }
+
+    return map;
+}
+
+
 bool RobotModel::initialize() 
 {
     if (!checkDuplication()) return false;

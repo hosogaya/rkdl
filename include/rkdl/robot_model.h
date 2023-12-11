@@ -42,6 +42,7 @@ public:
     std::shared_ptr<JointBase> getJoint(const Name& name) const {return joints_[joint_indexes_.at(name)];}
     std::shared_ptr<JointBase> getJoint(const int& index) const {return joints_[index];}
     int getJointIndex(const Name& name) const {return joint_indexes_.at(name);}
+    ActuatedJointMap createActuatedJointMap() const;
 
 private:
     // functions for initialization 
