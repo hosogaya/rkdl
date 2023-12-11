@@ -32,6 +32,10 @@ public:
     virtual void setAccelration(const Scalar& a) {}
     virtual void setTorque(const Scalar& t) {}
 
+    virtual Scalar position() const {return position_;}
+    virtual Scalar velocity() const {return velocity_;}
+    virtual Scalar torque() const {return torque_;}
+
     const Name name_;
     // Name parent_joint_;
     // Name child_joint_;
@@ -50,6 +54,11 @@ protected:
     // transform matrix
     TransformMatrix transform_matrix_;
     TransformMatrix differential_operator_;
+
+    Scalar position_;
+    Scalar velocity_;
+    Scalar accel_;
+    Scalar torque_;
     
 };
 }

@@ -44,6 +44,14 @@ public:
     int getJointIndex(const Name& name) const {return joint_indexes_.at(name);}
     ActuatedJointMap createActuatedJointMap() const;
 
+    /** 
+     * Return state vector including parent joitns
+     * These values are required to cal fk, jac, and so on 
+    */
+    Vector getJointPos(const Name& frame_name) const;
+    Vector getJointVel(const Name& frame_name) const;
+    Vector getJointTor(const Name& frame_name) const;
+
 private:
     // functions for initialization 
     bool checkDuplication();

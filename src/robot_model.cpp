@@ -30,6 +30,86 @@ ActuatedJointMap RobotModel::createActuatedJointMap() const
     return map;
 }
 
+Vector RobotModel::getJointPos(const Name& frame_name) const
+{
+    const auto& f = getFrame(frame_name);
+    auto j = getJoint(f->parent_joint_index_);
+    
+    const int size = j->pajn_;
+    Vector q(size);
+    
+    int index = size;
+    if (j->joint_type_ != JointType::Fixed)
+    {   
+        --index;
+        q[index] = j->position();
+    }
+    while (!j->isRoot())
+    {
+        if (j->joint_type_ != JointType::Fixed)
+        {
+            --index;
+            q[index] = j->position();
+            if (index == 0) return q;
+        }
+    }
+
+    return q;
+}
+
+Vector RobotModel::getJointVel(const Name& frame_name) const
+{
+    const auto& f = getFrame(frame_name);
+    auto j = getJoint(f->parent_joint_index_);
+    
+    const int size = j->pajn_;
+    Vector q(size);
+    
+    int index = size;
+    if (j->joint_type_ != JointType::Fixed)
+    {   
+        --index;
+        q[index] = j->velocity();
+    }
+    while (!j->isRoot())
+    {
+        if (j->joint_type_ != JointType::Fixed)
+        {
+            --index;
+            q[index] = j->velocity();
+            if (index == 0) return q;
+        }
+    }
+
+    return q;
+}
+
+Vector RobotModel::getJointTor(const Name& frame_name) const
+{
+    const auto& f = getFrame(frame_name);
+    auto j = getJoint(f->parent_joint_index_);
+    
+    const int size = j->pajn_;
+    Vector q(size);
+    
+    int index = size;
+    if (j->joint_type_ != JointType::Fixed)
+    {   
+        --index;
+        q[index] = j->position();
+    }
+    while (!j->isRoot())
+    {
+        if (j->joint_type_ != JointType::Fixed)
+        {
+            --index;
+            q[index] = j->velocity();
+            if (index == 0) return q;
+        }
+    }
+
+    return q;
+}
 
 bool RobotModel::initialize() 
 {

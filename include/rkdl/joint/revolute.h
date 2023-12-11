@@ -32,11 +32,6 @@ public:
     const Vector3 axis_vec_;    
     const RevoluteAxis axis_;
 protected:
-    Scalar position_;
-    Scalar velocity_;
-    Scalar accel_;
-    Scalar torque_;
-
     void setTransformMatrix(TransformMatrix& tm, const Scalar& p) const;
     void setDifferentialOperator(TransformMatrix& tm, const Scalar& p=0.0) const;
 };

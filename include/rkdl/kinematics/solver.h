@@ -19,6 +19,7 @@ public:
     static void updateKinematics(RobotModel& model);
     static Vector3 fk(const RobotModel& model, const Name& frame_name, const Vector3& p=Vector3::Zero());
     static Jacobian jacobian(const RobotModel& model, const Name& frame_name, const Vector3& p=Vector3::Zero());
+    static Jacobian jacobian_dot(const RobotModel& model, const Name& frame_name, const Vector3& p=Vector3::Zero());
 
     static bool error() {return error_;}
 private:
