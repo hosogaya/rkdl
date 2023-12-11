@@ -22,6 +22,7 @@ public:
     TransformMatrix transformMatrix(const Scalar& p) const override;
     TransformMatrix differentialTransformMatrix(const Scalar& p) const override;
     TransformMatrix differentialOperator(const Scalar& p) const override;
+    TransformMatrix timeDifferentialOPerator(const Scalar& p, const Scalar& v) const override;
 
 
     virtual void setPosition(const Scalar& p) override;
@@ -34,5 +35,6 @@ public:
 protected:
     void setTransformMatrix(TransformMatrix& tm, const Scalar& p) const;
     void setDifferentialOperator(TransformMatrix& tm, const Scalar& p=0.0) const;
+    void setTimeDifferentialOperator(TransformMatrix& tm, const Scalar& v=0.0) const;
 };
 }

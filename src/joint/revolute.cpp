@@ -31,18 +31,23 @@ TransformMatrix RevoluteJoint::transformMatrix(const Scalar& p) const
 
 TransformMatrix RevoluteJoint::differentialOperator(const Scalar& p) const 
 {
-    if (axis_ == RevoluteAxis::None) {
-        TransformMatrix tm;
-        setDifferentialOperator(tm, p);
-        return tm;
-    }
     return differential_operator_;
 }
-
 
 TransformMatrix RevoluteJoint::differentialTransformMatrix(const Scalar& p) const 
 {
     return transformMatrix(p)*differentialOperator(p);
+}
+
+TransformMatrix RevoluteJoint::timeDifferentialOPerator(const Scalar& p, const Scalar& v) const
+{
+    if (velocity_ == v) return time_differential_operator_;
+    else 
+    {
+        TransformMatrix tm;
+        setTimeDifferentialOperator(tm, v);
+        return tm;
+    }
 }
 
 void RevoluteJoint::setTransformMatrix(TransformMatrix& tm, const Scalar& p) const
@@ -107,6 +112,32 @@ void RevoluteJoint::setDifferentialOperator(TransformMatrix& tm, const Scalar& p
     }
 }
 
+void RevoluteJoint::setTimeDifferentialOperator(TransformMatrix& tm, const Scalar& v) const
+{
+    tm.setZero();
+    if (axis_ == RevoluteAxis::X)
+    {
+        tm.rotation_(1,1) =-v;
+        tm.rotation_(2,2) =-v;
+    }
+    else if (axis_ == RevoluteAxis::Y)
+    {
+        tm.rotation_(0,0) =-v;
+        tm.rotation_(2,2) =-v;
+    }
+    else if (axis_ == RevoluteAxis::Z)
+    {
+        tm.rotation_(0,0) =-v;
+        tm.rotation_(1,1) =-v;
+    }
+    else if (axis_ == RevoluteAxis::None)
+    {
+        tm.setRotationMatrix(M_PI, axis_vec_);
+        tm.rotation_ *= v;
+    }
+}
+
+
 void RevoluteJoint::setPosition(const Scalar& p) 
 {
     position_ = p;
@@ -116,6 +147,7 @@ void RevoluteJoint::setPosition(const Scalar& p)
 void RevoluteJoint::setVelocity(const Scalar& v)
 {
     velocity_ = v;
+    setTimeDifferentialOperator(time_differential_operator_, velocity_);
 }
 
 void RevoluteJoint::setAccelration(const Scalar& a) {accel_ = a;}

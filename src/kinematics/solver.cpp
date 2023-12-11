@@ -198,7 +198,7 @@ Jacobian Kinematics::jacobian(const RobotModel& model, const Name& frame_name, c
     return result;
 }
 
-Jacobian Kinematics::jacobian_dot(const RobotModel& model, const Name& frame_name, const Vector3& p=Vector3::Zero())
+Jacobian Kinematics::jacobian_dot(const RobotModel& model, const Name& frame_name, const Vector3& p)
 {
     std::shared_ptr<Frame> f = model.getFrame(frame_name);
     const TransformMatrix& tf = f->transform_matirx_;
@@ -214,7 +214,7 @@ Jacobian Kinematics::jacobian_dot(const RobotModel& model, const Name& frame_nam
         {
             --index;
             const TransformMatrix& ct = f->transform_matirx_;
-            result.col(index) = ct.rotation_*(j->velocity()*(j->differentialOperator()*j->differentialOperator()*(ct.inverse()*tt).translation_));
+            result.col(index) = ct.rotation_*(j->timeDifferentialOPerator()*j->differentialOperator()*(ct.inverse()*tt).translation_);
         }
         if (index == 0) break;
         if (j->isRoot()) {error_=true; break;}

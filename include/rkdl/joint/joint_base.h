@@ -24,6 +24,8 @@ public:
     virtual TransformMatrix transformMatrix(const Scalar& p) const {return transform_matrix_;}
     virtual const TransformMatrix& differentialOperator() const {return differential_operator_;}
     virtual TransformMatrix differentialOperator(const Scalar& p) const {return differential_operator_;}
+    virtual const TransformMatrix& timeDifferentialOPerator() const {return time_differential_operator_;}
+    virtual TransformMatrix timeDifferentialOPerator(const Scalar& p, const Scalar& v) const {return time_differential_operator_;}
     virtual TransformMatrix differentialTransformMatrix() const {return transform_matrix_*differential_operator_;}
     virtual TransformMatrix differentialTransformMatrix(const Scalar& p) const {return transform_matrix_*differential_operator_;}
 
@@ -54,6 +56,7 @@ protected:
     // transform matrix
     TransformMatrix transform_matrix_;
     TransformMatrix differential_operator_;
+    TransformMatrix time_differential_operator_;
 
     Scalar position_;
     Scalar velocity_;
