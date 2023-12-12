@@ -25,6 +25,7 @@ public:
     // https://www.jstage.jst.go.jp/article/jrsj/29/3/29_3_269/_pdf/-char/en
     // simple LM method with regularization term
     static bool ikPos(const RobotModel& model, const Name& frame_name, const Vector3& ref_x, Vector& q);
+    static bool ikPos(const RobotModel& model, const Name& frame_name, const Vector3& ref_x, ActuatedJointMap& joint_map);
 
     static bool error() {return error_;}
     static Scalar ik_eva_thres_;

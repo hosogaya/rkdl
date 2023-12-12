@@ -252,4 +252,24 @@ bool Kinematics::ikPos(const RobotModel& model, const Name& frame_name, const Ve
     return result;
 }
 
+bool Kinematics::ikPos(const RobotModel& model, const Name& frame_name, const Vector3& ref_x, ActuatedJointMap& joint_map)
+{
+    Vector q;
+    if (!ikPos(model, frame_name, ref_x, q)) return false;
+    std::shared_ptr<rkdl::Frame> f = model.getFrame(frame_name);
+    int index = q.size();
+    while (!f->isRoot())
+    {
+        const std::shared_ptr<rkdl::JointBase> j = model.getJoint(f->parent_joint_index_);
+        if (j->joint_type_ != rkdl::JointType::Fixed)
+        {
+            --index;
+            joint_map.at(j->name_) = q[index];
+        }
+        f = model.getFrame(f->parent_frame_index_);
+        if (index == 0) break;
+    }
+    return true;
+}
+
 }
