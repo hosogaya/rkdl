@@ -1,10 +1,14 @@
 #include <rkdl/kinematics/solver.h>
-
+#include <iostream>
 namespace rkdl
 {
-extern bool Kinematics::error_;
+bool Kinematics::error_ = false;
+Scalar Kinematics::ik_eva_diff_thres_ = 0.001;
+Scalar Kinematics::ik_eva_thres_ = 0.1;
+Scalar Kinematics::ik_diff_q_thres_ = M_PI/180.0*1e-2;
+Scalar Kinematics::ik_regularization_term_ = 0.01;
 
-TransformMatrix Kinematics::transformMatrix(RobotModel& model, const Name& frame_name, const  Vector& q)
+TransformMatrix Kinematics::calTransformMatrix(const RobotModel& model, const Name& frame_name, const  Vector& q)
 {
     std::shared_ptr<Frame> f = model.getFrame(frame_name);
     if (f->isRoot()) return TransformMatrix();
@@ -42,21 +46,20 @@ TransformMatrix Kinematics::transformMatrix(RobotModel& model, const Name& frame
     return result;
 }
 
-Vector3 Kinematics::posFK(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p)
+Vector3 Kinematics::calPosFK(const RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p)
 {
-    TransformMatrix tm = transformMatrix(model, frame_name, q);
+    TransformMatrix tm = calTransformMatrix(model, frame_name, q);
 
     return tm*p;
 }
 
-
-Matrix3 Kinematics::rotFK(RobotModel& model, const Name& frame_name, const Vector& q, const Matrix3& r)
+Matrix3 Kinematics::calRotFK(const RobotModel& model, const Name& frame_name, const Vector& q, const Matrix3& r)
 {
-    return transformMatrix(model, frame_name, q).rotation_*r;
+    return calTransformMatrix(model, frame_name, q).rotation_*r;
 }
 
 // dT/dq
-TransformMatrix Kinematics::differentialTransformMatrix(RobotModel& model, const Name& frame_name, const Name& joint_name, const Vector& q)
+TransformMatrix Kinematics::calDifferentialTransformMatrix(const RobotModel& model, const Name& frame_name, const Name& joint_name, const Vector& q)
 {
     std::shared_ptr<Frame> f = model.getFrame(frame_name);
     if (f->isRoot() || q.size()<1) return TransformMatrix();
@@ -99,7 +102,7 @@ TransformMatrix Kinematics::differentialTransformMatrix(RobotModel& model, const
     return result;
 }
 
-Jacobian Kinematics::jacobian(RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p)
+Jacobian Kinematics::calJacobian(const RobotModel& model, const Name& frame_name, const Vector& q, const Vector3& p)
 {
     std::shared_ptr<Frame> f = model.getFrame(frame_name);
     if (f->isRoot()) return Jacobian(3, q.size());
@@ -220,6 +223,31 @@ Jacobian Kinematics::jacobian_dot(const RobotModel& model, const Name& frame_nam
         if (j->isRoot()) {error_=true; break;}
         f = model.getFrame(f->parent_frame_index_);
         j = model.getJoint(f->parent_joint_index_);
+    }
+    return result;
+}
+
+bool Kinematics::ikPos(const RobotModel& model, const Name& frame_name, const Vector3& ref_x, Vector& q)
+{
+    Vector3 x = model.getFrame(frame_name)->transform_matirx_.translation_;
+    q = model.getJointPos(frame_name);
+    Scalar eva = (ref_x - x).squaredNorm();
+    Scalar pre_eva = eva;
+
+    int iteration = 0;
+    bool result = true;
+    while (eva > ik_eva_thres_)
+    {
+        Jacobian jac = calJacobian(model, frame_name, q);
+        auto H = (jac.transpose()*jac + ik_regularization_term_*Matrix(jac.cols(), jac.cols())).inverse();
+        Vector dq = H*jac.transpose()*(ref_x - x);
+        if (dq.norm() < ik_diff_q_thres_) {result = false; break;}
+        q += dq;
+        x = calPosFK(model, frame_name, q);
+        eva = (ref_x - x).squaredNorm();
+        if (pre_eva - eva < ik_eva_diff_thres_) {result = false; break;}
+        pre_eva = eva;
+        ++iteration;
     }
     return result;
 }

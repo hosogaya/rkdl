@@ -117,18 +117,18 @@ void RevoluteJoint::setTimeDifferentialOperator(TransformMatrix& tm, const Scala
     tm.setZero();
     if (axis_ == RevoluteAxis::X)
     {
-        tm.rotation_(1,1) =-v;
-        tm.rotation_(2,2) =-v;
+        tm.rotation_(1,2) =-v;
+        tm.rotation_(2,1) = v;
     }
     else if (axis_ == RevoluteAxis::Y)
     {
-        tm.rotation_(0,0) =-v;
-        tm.rotation_(2,2) =-v;
+        tm.rotation_(0,2) = v;
+        tm.rotation_(2,0) =-v;
     }
     else if (axis_ == RevoluteAxis::Z)
     {
-        tm.rotation_(0,0) =-v;
-        tm.rotation_(1,1) =-v;
+        tm.rotation_(0,1) =-v;
+        tm.rotation_(1,0) = v;
     }
     else if (axis_ == RevoluteAxis::None)
     {

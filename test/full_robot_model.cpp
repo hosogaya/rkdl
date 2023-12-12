@@ -42,7 +42,6 @@ int main()
     input.at("rot5-3") = M_PI_2;
     input.at("rot6-3") = M_PI_2;
 
-    auto start = std::chrono::system_clock::now();
     model.updatePos(input);
     rkdl::Kinematics::updateKinematics(model);
     for (const auto& f: foot_names) 
@@ -54,17 +53,24 @@ int main()
         // jac.eval();
         std::cout << fk.transpose() << std::endl << jac << std::endl;
     }
+    
+    rkdl::Vector3 ref_pos = {0.0, -400, -350};
+    rkdl::Vector q;
+    auto start = std::chrono::system_clock::now();
+    bool result = rkdl::Kinematics::ikPos(model, "foot2", ref_pos, q);
     auto end = std::chrono::system_clock::now();
-    rkdl::Vector q(3);
-    q << 0.0, M_PI_4, M_PI_2;
-    rkdl::Vector3 v;
-    v << 0.0, 0.0, 180.0;
-    auto tm = rkdl::Kinematics::transformMatrix(model, "frame2-3", q);
-    std::cout << tm.rotation_ << std::endl << tm.translation_.transpose() << std::endl;
-    std::cout << (tm*v).transpose() << std::endl;
-    std::cout << rkdl::Kinematics::posFK(model, "frame1-3", q).transpose() << std::endl;
-    std::cout << std::endl << (rkdl::Kinematics::differentialTransformMatrix(model, "frame1-3", "rot1-1", q)*v).transpose() << std::endl;
-    std::cout << std::endl << rkdl::Kinematics::jacobian(model, "frame1-3", q) << std::endl;;
+    std::cout << q.transpose() << " " << result << std::endl;
+
+    // rkdl::Vector q(3);
+    // q << 0.0, M_PI_4, M_PI_2;
+    // rkdl::Vector3 v;
+    // v << 0.0, 0.0, 180.0;
+    // auto tm = rkdl::Kinematics::calTransformMatrix(model, "frame2-3", q);
+    // std::cout << tm.rotation_ << std::endl << tm.translation_.transpose() << std::endl;
+    // std::cout << (tm*v).transpose() << std::endl;
+    // std::cout << rkdl::Kinematics::calPosFK(model, "frame1-3", q).transpose() << std::endl;
+    // std::cout << std::endl << (rkdl::Kinematics::calDifferentialTransformMatrix(model, "frame1-3", "rot1-1", q)*v).transpose() << std::endl;
+    // std::cout << std::endl << rkdl::Kinematics::calJacobian(model, "frame1-3", q) << std::endl;;
 
     std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
     return 0;

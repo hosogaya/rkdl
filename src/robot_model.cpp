@@ -46,6 +46,7 @@ Vector RobotModel::getJointPos(const Name& frame_name) const
     }
     while (!j->isRoot())
     {
+        j = getJoint(j->parent_joint_index_);
         if (j->joint_type_ != JointType::Fixed)
         {
             --index;
@@ -73,6 +74,7 @@ Vector RobotModel::getJointVel(const Name& frame_name) const
     }
     while (!j->isRoot())
     {
+        j = getJoint(j->parent_joint_index_);
         if (j->joint_type_ != JointType::Fixed)
         {
             --index;
@@ -100,6 +102,7 @@ Vector RobotModel::getJointTor(const Name& frame_name) const
     }
     while (!j->isRoot())
     {
+        j = getJoint(j->parent_joint_index_);
         if (j->joint_type_ != JointType::Fixed)
         {
             --index;
