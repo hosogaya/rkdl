@@ -24,6 +24,7 @@ using Jacobian = Eigen::Matrix<Scalar, 3, Eigen::Dynamic>;
 using ActuatedJointMap = std::unordered_map<Name, Scalar>;
 using FootMap = std::unordered_map<rkdl::Name, rkdl::Vector3>;
 using Quaternion = Eigen::Quaternion<Scalar>;
+using AngleAxis = Eigen::AngleAxis<Scalar>;
 typedef enum
 {
     Root=0,
