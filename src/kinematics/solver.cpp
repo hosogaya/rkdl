@@ -3,9 +3,9 @@
 namespace rkdl
 {
 bool Kinematics::error_ = false;
-Scalar Kinematics::ik_eva_diff_thres_ = 0.001;
+Scalar Kinematics::ik_eva_diff_thres_ = 1.0e-10;
 Scalar Kinematics::ik_eva_thres_ = 0.1;
-Scalar Kinematics::ik_diff_q_thres_ = M_PI/180.0*1e-2;
+Scalar Kinematics::ik_diff_q_thres_ = M_PI/180.0*1e-5;
 Scalar Kinematics::ik_regularization_term_ = 0.01;
 
 TransformMatrix Kinematics::calTransformMatrix(const RobotModel& model, const Name& frame_name, const  Vector& q)
@@ -235,21 +235,26 @@ bool Kinematics::ikPos(const RobotModel& model, const Name& frame_name, const Ve
     Scalar pre_eva = eva;
 
     int iteration = 0;
-    bool result = true;
     while (eva > ik_eva_thres_)
     {
         Jacobian jac = calJacobian(model, frame_name, q);
-        auto H = (jac.transpose()*jac + ik_regularization_term_*Matrix(jac.cols(), jac.cols())).inverse();
+        auto H = (jac.transpose()*jac + ik_regularization_term_*Matrix::Identity(jac.cols(), jac.cols())).inverse();
         Vector dq = H*jac.transpose()*(ref_x - x);
-        if (dq.norm() < ik_diff_q_thres_) {result = false; break;}
+        if (!dq.allFinite()) {return false;}
+        if (dq.norm() < ik_diff_q_thres_) {return false;}
         q += dq;
         x = calPosFK(model, frame_name, q);
         eva = (ref_x - x).squaredNorm();
-        if (pre_eva - eva < ik_eva_diff_thres_) {result = false; break;}
+        // if (pre_eva - eva < ik_eva_diff_thres_) {return false;}
         pre_eva = eva;
         ++iteration;
     }
-    return result;
+    for (int i=0; i<q.size(); ++i)
+    {
+        while (q[i] > M_PI) q[i] -= M_PI*2.0f;
+        while (q[i] <= -M_PI) q[i] += M_PI*2.0f;
+    }
+    return true;
 }
 
 bool Kinematics::ikPos(const RobotModel& model, const Name& frame_name, const Vector3& ref_x, ActuatedJointMap& joint_map)
