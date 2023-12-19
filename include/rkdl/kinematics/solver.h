@@ -2,7 +2,6 @@
 
 #include <rkdl/math/math.h>
 #include <rkdl/robot_model.h>
-#include <rkdl/data.h>
 
 namespace rkdl
 {
