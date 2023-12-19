@@ -12,11 +12,18 @@ This library can handle robot tree structure which has the following specificati
 * Fixed Joint: fix two bodies relative pose.
 * revolute Joint: Successor body rotates around a constant axis. 
 
-
 # Geometry
 * Origin of Frame: the connection position with parent joint
 * Frame::cog_: the position of center of body relative to its origin
 * JointBase::fixed_position: the coordinate of connection position with parent frame in parent frame origin
+
+# Support functions
+These functions use and calculate position/orientation relative to root body coordinate. 
+
+* calculate transform matrixes of each body (${}^{root\ body}T_{body}$)
+* forward kinematics
+* inverse kinematics (Levenberg-Marquardt method)
+* Jacobian of forward kinematics 
 
 # Install
 ```cmd
