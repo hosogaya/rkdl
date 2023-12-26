@@ -4,9 +4,10 @@ namespace rkdl
 {
 bool Kinematics::error_ = false;
 Scalar Kinematics::ik_eva_diff_thres_ = 1.0e-10;
-Scalar Kinematics::ik_eva_thres_ = 0.1;
-Scalar Kinematics::ik_diff_q_thres_ = M_PI/180.0*1e-5;
+Scalar Kinematics::ik_eva_thres_ = 1.0;
+Scalar Kinematics::ik_diff_q_thres_ = M_PI/180.0*1e-3;
 Scalar Kinematics::ik_regularization_term_ = 0.01;
+Scalar Kinematics::ik_max_iteration_ = 50;
 
 TransformMatrix Kinematics::calTransformMatrix(const RobotModel& model, const Name& frame_name, const  Vector& q)
 {
@@ -248,6 +249,7 @@ bool Kinematics::ikPos(const RobotModel& model, const Name& frame_name, const Ve
         // if (pre_eva - eva < ik_eva_diff_thres_) {return false;}
         pre_eva = eva;
         ++iteration;
+        if (iteration > ik_max_iteration_) return false;
     }
     for (int i=0; i<q.size(); ++i)
     {

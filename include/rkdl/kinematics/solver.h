@@ -31,6 +31,7 @@ public:
     static Scalar ik_eva_diff_thres_;
     static Scalar ik_diff_q_thres_;
     static Scalar ik_regularization_term_;
+    static Scalar ik_max_iteration_;
 private:
     static bool error_;
 };
